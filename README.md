@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+![image](https://github.com/user-attachments/assets/80c2a914-4280-4164-b2ab-3e120cfc56b3)
 
-## Getting Started
+# ✨ AI 아트 카드 갤러리 ✨
 
-First, run the development server:
+당신이 만든 AI 아트를 공유하고, 다른 이들과 소통하며, 특별한 카드를 교환하는 아름다운 공간, AI 아트 카드 갤러리에 오신 것을 환영합니다. 이 프로젝트는 AI 창작의 즐거움을 나누고, 서로의 작품을 존중하며 교류하는 모바일 중심의 커뮤니티 플랫폼을 지향합니다.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🌸 프로젝트의 소중한 비전
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+AI 아티스트분들이 저작권 부담 없이 자신만의 AI 생성 이미지를 **카드 형태**로 자유롭게 선보이고, 다른 사용자들과 함께 작품의 가치를 찾아가는 활기찬 커뮤니티를 만드는 것이 저희의 꿈입니다. 여기서는 단순히 감상하는 것을 넘어, 카드에 **별점을 주고, 포인트를 얻어 새로운 카드를 교환하는** 선순환의 기쁨을 경험하실 수 있을 거예요. 모바일 환경에 최적화된 사용자 경험을 통해, 누구나 쉽고 편안하게 AI 아트의 세계에 참여할 수 있도록 섬세하게 준비하고 있습니다.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 💖 주요 기능 미리보기
 
-To learn more about Next.js, take a look at the following resources:
+* **나만의 카드 공간:** AI 아트를 손쉽게 업로드하고, 상세한 정보를 담아 나만의 카드를 만들 수 있어요. 물론, 소중한 작품은 언제든 수정하고 삭제할 수 있답니다.
+* **다채로운 카드 탐험:** 최신 AI 아트 카드들을 부드러운 무한 스크롤로 감상하고, 원하는 카드를 제목이나 설명으로 찾아볼 수 있습니다. 마음에 드는 카드에는 별점을 주며 응원의 마음을 전해주세요.
+* **포인트로 즐기는 교환:** 카드 감상이나 소소한 도전 과제를 통해 포인트를 모아보세요. 이 포인트는 다른 사용자와 카드를 1:1로 교환하는 데 사용된답니다.
+* **편리한 사용자 경험:** 회원가입부터 로그인, 프로필 관리까지 모든 과정이 간편하며, 소중한 개인 정보는 안전하게 보호됩니다.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ 사용한 기술 스택
 
-## Deploy on Vercel
+* **프론트엔드/백엔드 (풀스택):** 사용자에게 부드러운 경험을 선사하고 서버와의 소통을 담당할 **Next.js 14+ (App Router 기반)와 TypeScript**가 사용됩니다.
+* **데이터베이스:** 견고하고 안정적인 데이터 저장을 위해 **PostgreSQL**을 선택했습니다.
+* **ORM (객체 관계 매핑):** TypeScript와 완벽하게 어우러지는 **Prisma**를 통해 데이터베이스를 효율적으로 관리합니다.
+* **사용자 인증:** 안전하고 신뢰할 수 있는 로그인 환경을 위해 **NextAuth.js**가 함께합니다.
+* **스타일링:** 모바일에 최적화된 아름답고 반응성 있는 디자인은 **Tailwind CSS**의 손길로 완성됩니다.
+* **이미지 스토리지:** 사용자들이 업로드하는 소중한 이미지들은 **AWS S3** 또는 **Google Cloud Storage**와 같은 클라우드 스토리지에 안전하게 보관될 예정입니다.
+* **배포:** 빠르고 간편한 배포를 위해 **Vercel**을 활용하며, 개발 과정은 **Git과 GitHub**로 체계적으로 관리됩니다.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🌟 앞으로의 발자취
+
+현재는 서비스의 핵심 기능들을 탄탄하게 다지는 데 집중하고 있습니다. 이후에는 여러분의 피드백을 바탕으로 더욱 풍성한 기능들을 추가하며 AI 아트 카드 갤러리를 발전시켜 나갈 계획입니다.
+
+* Google, 카카오 등 **소셜 로그인** 연동으로 더욱 간편한 접속.
+* 카드에 대한 **댓글, 좋아요, 팔로우** 기능으로 활발한 소통 지원.
+* 거래 제안 등 중요한 소식을 놓치지 않도록 **실시간 알림** 시스템 도입.
+* 다양한 **카테고리 및 태그**로 원하는 카드를 더욱 쉽게 발견.
+* 모바일뿐 아니라 **PC 웹 환경**에서도 최적의 경험 제공.
+
+---
+
+이 프로젝트에 대한 따뜻한 관심과 응원에 진심으로 감사드립니다. 함께 AI 아트의 새로운 지평을 열어갈 수 있기를 기대합니다.
+
+---
