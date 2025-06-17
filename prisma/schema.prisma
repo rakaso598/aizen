@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------
+// Aizen 프로젝트 데이터 모델 정의
+// ----------------------------------------------------
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  username     String    @unique
+  points       Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // 관계 정의
+  cards        Card[]
+  ratings      Rating[]
+  proposerTrades Trade[] @relation("ProposerTrades") // User가 제안한 거래
+  receiverTrades Trade[] @relation("ReceiverTrades") // User가 받은 거래
+  userChallenges UserChallenge[]
+}
+
+model Card {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  imageUrl      String
+  ownerId       String    @map("owner_id") // DB 컬럼명 매핑
+  owner         User      @relation(fields: [ownerId], references: [id])
+  ratingCount   Int       @default(0)
+  averageRating Float     @default(0.0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 관계 정의
+  ratings       Rating[]
+  proposerOffers Trade[] @relation("ProposerOffers") // 카드가 제안자의 카드인 거래
+  receiverRequests Trade[] @relation("ReceiverRequests") // 카드가 수신자의 요청 카드인 거래
+
+  @@map("cards") // DB 테이블 이름을 명시적으로 지정
+}
+
+model Rating {
+  id        String   @id @default(cuid())
+  cardId    String
+  userId    String
+  value     Int      // 1-5 사이의 별점 값
+  createdAt DateTime @default(now())
+
+  // 관계 정의
+  card      Card     @relation(fields: [cardId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([cardId, userId]) // 각 카드에 사용자당 한 번만 별점 부여 가능
+  @@map("ratings")
+}
+
+model Challenge {
+  id             String          @id @default(cuid())
+  name           String
+  description    String
+  rewardPoints   Int
+  rewardBadgeUrl String?
+  type           String          // 예: "UPLOAD_N_CARDS", "GIVE_N_RATINGS" (챌린지 유형)
+  targetValue    Int             // 예: N회 (챌린지 목표 값)
+  isRepeatable   Boolean         @default(false) // 반복 가능한 챌린지인지 여부
+
+  // 관계 정의
+  userChallenges UserChallenge[]
+
+  @@map("challenges")
+}
+
+model UserChallenge {
+  id          String    @id @default(cuid())
+  userId      String
+  challengeId String
+  progress    Int       @default(0) // 챌린지 진행도
+  isCompleted Boolean   @default(false) // 챌린지 완료 여부
+  completedAt DateTime? // 챌린지 완료 시간
+
+  // 관계 정의
+  user        User      @relation(fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+
+  @@unique([userId, challengeId]) // 사용자-챌린지 조합은 유일해야 함
+  @@map("user_challenges")
+}
+
+// 거래 상태를 나타내는 Enum
+enum TradeStatus {
+  PENDING   // 제안 대기 중
+  ACCEPTED  // 제안 수락됨
+  REJECTED  // 제안 거절됨
+  COMPLETED // 거래 완료됨 (카드 소유권 이전 완료)
+  CANCELLED // 거래 취소됨
+}
+
+model Trade {
+  id             String      @id @default(cuid())
+  proposerId     String      // 거래를 제안한 사용자 ID
+  receiverId     String      // 거래 제안을 받은 사용자 ID
+  proposerCardId String      // 제안자가 교환하려는 카드 ID
+  receiverCardId String      // 수신자가 교환해야 하는 카드 ID
+  status         TradeStatus @default(PENDING) // 현재 거래 상태
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // 관계 정의
+  proposer       User        @relation("ProposerTrades", fields: [proposerId], references: [id])
+  receiver       User        @relation("ReceiverTrades", fields: [receiverId], references: [id])
+  proposerCard   Card        @relation("ProposerOffers", fields: [proposerCardId], references: [id])
+  receiverCard   Card        @relation("ReceiverRequests", fields: [receiverCardId], references: [id])
+
+  @@map("trades")
+}
