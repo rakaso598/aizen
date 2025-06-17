@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/80c2a914-4280-4164-b2ab-3e120cfc56b3)
+![Animation_aizen_1](https://github.com/user-attachments/assets/c7605a9b-cd4a-4bf8-8931-da6a09744085)
 
 # ✨ AI 아트 카드 갤러리 ✨
 
