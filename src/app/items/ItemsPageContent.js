@@ -1,14 +1,16 @@
 // app/items/ItemsPageContent.js
-'use client'; // 이 파일은 클라이언트 컴포넌트임을 명시합니다.
+'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+// LoadingSpinner 컴포넌트를 import 합니다.
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 export default function ItemsPageContent() {
   const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 초기 로딩 상태는 true
   const [error, setError] = useState('');
   const [totalCards, setTotalCards] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -20,7 +22,7 @@ export default function ItemsPageContent() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const fetchCards = useCallback(async (currentSearchParams) => {
-    setLoading(true);
+    setLoading(true); // 데이터 fetch 시작 시 로딩 상태 true
     setError('');
 
     const query = new URLSearchParams(currentSearchParams);
@@ -47,7 +49,7 @@ export default function ItemsPageContent() {
       setError('네트워크 오류 또는 서버에 연결할 수 없습니다.');
       setCards([]);
     } finally {
-      setLoading(false);
+      setLoading(false); // 데이터 로딩이 완료되면 loading 상태를 false로 변경
     }
   }, []);
 
@@ -60,6 +62,7 @@ export default function ItemsPageContent() {
     setInputLimitPerPage(limitParam);
     setCurrentPage(pageParam);
 
+    // 컴포넌트가 마운트되거나 searchParams가 변경될 때 카드 목록을 가져옵니다.
     fetchCards(searchParams);
   }, [searchParams, fetchCards]);
 
@@ -86,6 +89,9 @@ export default function ItemsPageContent() {
 
   const renderPaginationButtons = () => {
     const buttons = [];
+    // 페이지 수가 0이면 버튼을 렌더링하지 않습니다.
+    if (totalPages === 0) return null;
+
     for (let i = 1; i <= totalPages; i++) {
       buttons.push(
         <button
@@ -98,7 +104,7 @@ export default function ItemsPageContent() {
               ? 'bg-cyan-600 text-white shadow-lg focus:ring-cyan-500 focus:ring-opacity-75'
               : 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-black focus:ring-white focus:ring-opacity-75'
             }`}
-          disabled={loading}
+          disabled={loading} // 로딩 중에는 버튼 비활성화
         >
           {i}
         </button>
@@ -107,19 +113,8 @@ export default function ItemsPageContent() {
     return buttons;
   };
 
-  // 로딩 스피너는 이제 components/LoadingSpinner.js에서 담당하므로 여기서는 제거합니다.
-  // if (loading) { ... }
-
   return (
-    // 랜딩 페이지와 동일한 배경 그라데이션 및 최소 높이 적용
-    // 헤더 때문에 pt-24를 줘서 헤더 아래로 내용이 시작되도록 함
     <div className="relative min-h-screen bg-gradient-to-br from-gray-950 to-black text-white pt-24 pb-12">
-      {/* 배경 애니메이션 (선택 사항: 필요하다면 랜딩 페이지에서 복사)
-          ItemsPageContent는 카드 탐색 페이지이므로, 만약 이 페이지에서도
-          움직이는 blob 애니메이션을 원한다면 랜딩 페이지의 해당 div를 복사하여 추가할 수 있습니다.
-          현재는 제외하여 콘텐츠에 집중하도록 합니다.
-      */}
-
       <div className="container mx-auto px-6 py-8 z-10 relative">
         <h1 className="text-5xl sm:text-6xl font-extrabold mb-6 text-white text-center leading-tight drop-shadow-lg animate-fade-in-up">
           <span className="text-yellow-400">AI</span> 아트 <span className="text-cyan-400">카드</span> 갤러리
@@ -184,7 +179,12 @@ export default function ItemsPageContent() {
           </p>
         )}
 
-        {cards.length === 0 && !loading && !error ? (
+        {/* ✅ 변경된 부분: 로딩 중일 때는 LoadingSpinner를 표시합니다. */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <LoadingSpinner />
+          </div>
+        ) : cards.length === 0 && !error ? (
           <p className="text-center text-gray-400 text-2xl animate-fade-in">
             카드가 없습니다. <Link href="/signup" className="text-cyan-400 hover:underline">새로운 카드를 생성</Link>해보세요!
           </p>
@@ -193,7 +193,7 @@ export default function ItemsPageContent() {
             {cards.map((card) => (
               <Link key={card.id} href={`/items/cards/${card.id}`} passHref>
                 <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden flex flex-col cursor-pointer transform hover:scale-102 transition-all duration-300 hover:border-cyan-500">
-                  <div className="relative w-full h-56 bg-gray-700"> {/* 이미지 영역 높이 증가 */}
+                  <div className="relative w-full h-56 bg-gray-700">
                     <Image
                       src={card.imageUrl}
                       alt={card.title}
@@ -210,7 +210,6 @@ export default function ItemsPageContent() {
                       </h3>
                       <p className="text-base text-gray-400 mb-1">
                         <span className="font-semibold text-gray-300">희귀도:</span>{' '}
-                        {/* 희귀도별 색상 강조 */}
                         <span className={
                           card.rarity === 'Legendary' ? 'text-yellow-400 font-bold' :
                             card.rarity === 'Epic' ? 'text-red-400 font-bold' :
