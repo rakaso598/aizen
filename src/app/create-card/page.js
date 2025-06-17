@@ -4,15 +4,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react'; // useSession 훅 임포트
-import LoadingSpinner from '../../components/LoadingSpinner'; // LoadingSpinner 컴포넌트 임포트
+import LoadingSpinner from '@/components/LoadingSpinner'; // 전체 페이지 로딩 스피너
+import SmallLoadingSpinner from '@/components/SmallLoadingSpinner'; // 새로 만든 작은 스피너 임포트
 
 export default function CreateCardPage() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [rarity, setRarity] = useState('Common');
-  const [message, setMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [isLoadingButton, setIsLoadingButton] = useState(false); // 버튼 로딩 상태 추가
 
   const router = useRouter();
   const { data: session, status } = useSession(); // useSession 훅 사용
@@ -25,14 +25,14 @@ export default function CreateCardPage() {
     }
   }, [status, router]);
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage('');
-    setIsSuccess(false);
+    setIsLoadingButton(true); // 버튼 로딩 시작
 
     if (status !== 'authenticated') {
-      setMessage('카드를 생성하려면 먼저 로그인해야 합니다.');
-      setIsSuccess(false);
+      alert('카드를 생성하려면 먼저 로그인해야 합니다.');
+      setIsLoadingButton(false); // 로딩 종료
       return;
     }
 
@@ -41,9 +41,6 @@ export default function CreateCardPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // NextAuth.js는 인증된 세션 쿠키를 자동으로 포함시키므로,
-          // 클라이언트에서 'Authorization' 헤더를 수동으로 추가하는 것은 불필요합니다.
-          // 서버 API에서 NextAuth.js의 세션을 검증해야 합니다.
         },
         body: JSON.stringify({ title, description, imageUrl, rarity }),
       });
@@ -51,31 +48,33 @@ export default function CreateCardPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || '카드가 성공적으로 생성되었습니다!');
-        setIsSuccess(true);
+        // 카드 생성 성공 시 즉시 /items 페이지로 이동
+        router.push('/items');
+
+        // 입력 필드 초기화 (페이지 이동 직전에)
         setTitle('');
         setDescription('');
         setImageUrl('');
         setRarity('Common');
-        // 생성 후 잠시 뒤 카드 목록으로 이동하거나 상세 페이지로 이동 (선택 사항)
-        // setTimeout(() => router.push('/items'), 2000);
+
       } else {
-        setMessage(data.message || '카드 생성에 실패했습니다.');
-        setIsSuccess(false);
+        // 카드 생성 실패 시 (alert 또는 폼 내부 메시지 등으로 처리)
+        alert(data.message || '카드 생성에 실패했습니다.');
         if (response.status === 401) {
           router.push('/login');
         }
       }
     } catch (error) {
       console.error('카드 생성 요청 중 오류 발생:', error);
-      setMessage('네트워크 오류 또는 서버에 연결할 수 없습니다.');
-      setIsSuccess(false);
+      alert('네트워크 오류 또는 서버에 연결할 수 없습니다.');
+    } finally {
+      setIsLoadingButton(false); // 로딩 종료 (성공/실패와 관계없이)
     }
   };
 
   // 세션이 로딩 중일 때 LoadingSpinner 컴포넌트 렌더링
   if (status === 'loading') {
-    return <LoadingSpinner />; // LoadingSpinner 컴포넌트 사용
+    return <LoadingSpinner />; // 전체 페이지 로딩 스피너
   }
 
   // 세션이 없거나 인증되지 않은 상태 (useEffect에서 로그인 페이지로 리다이렉트)
@@ -85,9 +84,8 @@ export default function CreateCardPage() {
 
   // 로그인된 상태
   return (
-    // 랜딩 페이지와 동일한 그라데이션 배경
     <div className="relative min-h-screen flex flex-col items-center justify-center p-4 sm:p-24 bg-gradient-to-br from-gray-950 to-black text-white overflow-hidden">
-      {/* 배경 애니메이션 (랜딩 페이지와 동일하게 적용) */}
+      {/* 배경 애니메이션 (기존과 동일) */}
       <div className="absolute inset-0 z-0 opacity-20">
         <div className="absolute -top-1/4 -left-1/4 w-1/2 h-1/2 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-1/4 -right-1/4 w-1/2 h-1/2 bg-yellow-500 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-4000"></div>
@@ -95,13 +93,12 @@ export default function CreateCardPage() {
         <div className="absolute bottom-1/3 left-1/3 w-1/3 h-1/3 bg-white rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-8000"></div>
       </div>
 
-      {/* 컨테이너 디자인 변경: 어둡고 투명한 배경, 그림자, 테두리 */}
+      {/* 컨테이너 디자인 (기존과 동일) */}
       <div className="relative z-10 w-full max-w-md bg-gray-900 bg-opacity-70 backdrop-blur-md p-8 rounded-xl shadow-2xl border border-gray-700">
-        {/* 제목 스타일 변경: 흰색 텍스트에 시안색 포인트, 그림자 효과 */}
         <h1 className="text-4xl font-extrabold text-center text-white mb-8 drop-shadow-md">
           새 <span className="text-cyan-400">카드</span> 생성
         </h1>
-        <form onSubmit={handleSubmit} className="space-y-6"> {/* 간격 조정 */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="title" className="block text-lg font-medium text-gray-300 mb-2">카드 제목</label>
             <input
@@ -109,7 +106,6 @@ export default function CreateCardPage() {
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              // 입력 필드 디자인 변경: 어두운 배경, 흰색 텍스트, 회색 테두리
               className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base"
               required
             />
@@ -121,7 +117,6 @@ export default function CreateCardPage() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows="3"
-              // 입력 필드 디자인 변경
               className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base"
             ></textarea>
           </div>
@@ -132,7 +127,6 @@ export default function CreateCardPage() {
               id="imageUrl"
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
-              // 입력 필드 디자인 변경
               className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base"
               required
             />
@@ -143,7 +137,6 @@ export default function CreateCardPage() {
               id="rarity"
               value={rarity}
               onChange={(e) => setRarity(e.target.value)}
-              // 셀렉트 박스 디자인 변경
               className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base"
               required
             >
@@ -153,22 +146,24 @@ export default function CreateCardPage() {
               <option value="Legendary" className="bg-gray-800 text-white">Legendary</option>
             </select>
           </div>
-          {message && (
-            <p className={`text-center text-base font-medium ${isSuccess ? 'text-green-500' : 'text-red-500'}`}>
-              {message}
-            </p>
-          )}
           <button
             type="submit"
-            // 버튼 디자인 변경: 시안색 배경, 흰색 텍스트, 그림자, 호버/포커스 효과
             className="w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-lg text-lg font-bold text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-75 transform hover:scale-105 transition-all duration-300"
+            disabled={isLoadingButton} // 로딩 중일 때 버튼 비활성화
           >
-            카드 생성
+            {isLoadingButton ? (
+              <div className="flex items-center">
+                <SmallLoadingSpinner className="mr-2" /> {/* SmallLoadingSpinner 사용 */}
+                생성 중...
+              </div>
+            ) : (
+              '카드 생성'
+            )}
           </button>
         </form>
       </div>
 
-      {/* Tailwind CSS 애니메이션 키프레임 (tailwind.config.js에 추가 권장) */}
+      {/* Tailwind CSS 애니메이션 키프레임 (기존과 동일) */}
       <style jsx global>{`
         @keyframes fadeIn {
           from { opacity: 0; }

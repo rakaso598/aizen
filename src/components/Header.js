@@ -39,6 +39,10 @@ export default function Header() {
             <span className="text-lg text-gray-400">Loading...</span>
           ) : session ? ( // 로그인 되어 있을 때 (세션 존재)
             <>
+              {/* 카드 생성 버튼 추가 */}
+              <Link href="/create-card" className="text-lg text-gray-300 hover:text-yellow-400 transition-colors duration-200">
+                카드 생성
+              </Link>
               <Link href="/me" className="text-lg text-gray-300 hover:text-green-400 transition-colors duration-200">
                 내 정보
               </Link>
