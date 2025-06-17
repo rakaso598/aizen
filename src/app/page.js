@@ -100,7 +100,7 @@ export default function Home() {
           <p className="text-2xl text-white mb-10 animate-fade-in animation-delay-500">
             당신만의 AI 아트 컬렉션을 만들고, 글로벌 커뮤니티와 교류하며 무한한 가능성을 탐험하세요.
           </p>
-          <Link href="/auth/signup" className="px-10 py-5 bg-white text-blue-700 font-bold text-2xl rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75">
+          <Link href="/signup" className="px-10 py-5 bg-white text-blue-700 font-bold text-2xl rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75">
             무료로 시작하기
           </Link>
         </div>
