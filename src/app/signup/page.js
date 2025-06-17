@@ -65,6 +65,9 @@ export default function SignupPage() {
         <h1 className="text-4xl font-extrabold text-center text-white mb-8 drop-shadow-md">
           새 계정 <span className="text-yellow-400">만들기</span>
         </h1>
+        <label htmlFor="email" className="block text-sm font-medium text-center text-gray-300 mb-2">🚨경고: 현재 테스트 중인 버전입니다. DB와 연동되어 있으니 실제 민감 정보를 절대 입력하지 마세요. 🚨</label>
+        <label htmlFor="email" className="block text-sm font-medium text-center text-gray-300 mb-2">‼️주의: 본 플랫폼은 개발 단계에 있으며, 서비스 안정성 및 보안이 보장되지 않습니다.‼️</label>
+
         <form onSubmit={handleSubmit} className="space-y-6"> {/* 간격 조정 */}
           <div>
             <label htmlFor="email" className="block text-lg font-medium text-gray-300 mb-2">이메일</label>
