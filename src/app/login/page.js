@@ -1,51 +1,39 @@
 // app/login/page.js
-'use client'; // 클라이언트 컴포넌트로 지정
+'use client';
 
 import { useState } from 'react';
+import { signIn } from 'next-auth/react'; // next-auth/react에서 signIn 함수 임포트
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
-  const [emailOrUsername, setEmailOrUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [message, setMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(''); // 이전 메시지 초기화
-    setIsSuccess(false);
+    setError('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ emailOrUsername, password }),
+      // NextAuth.js의 signIn 함수 사용
+      const result = await signIn('credentials', {
+        redirect: false, // 로그인 실패 시 리다이렉트 방지
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        setMessage(data.message || '로그인에 성공했습니다!');
-        setIsSuccess(true);
-        // JWT 토큰을 로컬 스토리지에 저장 (보안상 더 좋은 방법은 NextAuth.js 같은 라이브러리 사용)
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user)); // 사용자 정보도 저장 (선택 사항)
-
-        // 로그인 성공 후 대시보드 또는 메인 페이지로 리다이렉트
-        setTimeout(() => {
-          router.push('/'); // 메인 페이지 경로
-        }, 1500);
+      if (result.error) {
+        // 로그인 실패 시 에러 메시지 처리
+        setError(result.error);
       } else {
-        setMessage(data.message || '로그인에 실패했습니다.');
-        setIsSuccess(false);
+        // 로그인 성공 시 메인 페이지 또는 대시보드로 리다이렉트
+        router.push('/');
       }
-    } catch (error) {
-      console.error('로그인 요청 중 오류 발생:', error);
-      setMessage('네트워크 오류 또는 서버에 연결할 수 없습니다.');
-      setIsSuccess(false);
+    } catch (err) {
+      console.error('로그인 요청 중 오류 발생:', err);
+      setError('네트워크 오류 또는 서버에 연결할 수 없습니다.');
     }
   };
 
@@ -55,12 +43,12 @@ export default function LoginPage() {
         <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">로그인</h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="emailOrUsername" className="block text-sm font-medium text-gray-700">이메일 또는 사용자 이름</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">이메일</label>
             <input
-              type="text"
-              id="emailOrUsername"
-              value={emailOrUsername}
-              onChange={(e) => setEmailOrUsername(e.target.value)}
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               required
             />
@@ -76,10 +64,8 @@ export default function LoginPage() {
               required
             />
           </div>
-          {message && (
-            <p className={`text-center text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
-              {message}
-            </p>
+          {error && (
+            <p className="text-center text-red-600 text-sm">{error}</p>
           )}
           <button
             type="submit"
@@ -88,12 +74,11 @@ export default function LoginPage() {
             로그인
           </button>
         </form>
-        <p className="mt-6 text-center text-sm text-gray-600">
-          계정이 없으신가요?{' '}
-          <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
-            회원가입
-          </a>
-        </p>
+        <div className="mt-6 text-center">
+          <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+            계정이 없으신가요? 회원가입
+          </Link>
+        </div>
       </div>
     </div>
   );

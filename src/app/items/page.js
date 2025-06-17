@@ -4,35 +4,35 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 export default function ItemsPage() {
   const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // 데이터 로딩 중임을 나타내는 일반 로딩 상태
   const [error, setError] = useState('');
   const [totalCards, setTotalCards] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 필터링 상태
-  const [filterOwnerId, setFilterOwnerId] = useState('');
-  const [filterRarity, setFilterRarity] = useState('');
+  // 희귀도 드롭다운의 현재 값을 저장할 로컬 상태 (사용자 입력 전용)
+  const [inputRarity, setInputRarity] = useState('');
+  // 한 페이지당 카드 수 드롭다운의 현재 값을 저장할 로컬 상태 (사용자 입력 전용)
+  const [inputLimitPerPage, setInputLimitPerPage] = useState(10); // 기본값 10
+
+  // 페이지네이션 UI에 사용될 실제 현재 페이지 상태
   const [currentPage, setCurrentPage] = useState(1);
-  const [limitPerPage, setLimitPerPage] = useState(10); // 한 페이지당 아이템 수
 
   // 카드 데이터 가져오는 함수
-  const fetchCards = useCallback(async () => {
-    setLoading(true);
+  const fetchCards = useCallback(async (currentSearchParams) => {
+    setLoading(true); // 데이터 요청 시작 시 로딩 상태 활성화
     setError('');
 
-    const query = new URLSearchParams();
-    if (filterOwnerId) query.append('ownerId', filterOwnerId);
-    if (filterRarity) query.append('rarity', filterRarity);
-    query.append('page', currentPage.toString());
-    query.append('limit', limitPerPage.toString());
-
-    // URL 업데이트 (뒤로가기/앞으로가기 버튼 지원)
-    router.push(`/items?${query.toString()}`, { shallow: true });
+    const query = new URLSearchParams(currentSearchParams);
+    // URL 쿼리 파라미터에서 직접 값을 가져와 사용
+    const rarityToFetch = query.get('rarity') || '';
+    const pageToFetch = parseInt(query.get('page') || '1', 10);
+    const limitToFetch = parseInt(query.get('limit') || '10', 10);
 
     try {
       const response = await fetch(`/api/items/cards?${query.toString()}`);
@@ -44,7 +44,7 @@ export default function ItemsPage() {
         setTotalPages(data.totalPages);
         // 서버에서 받은 실제 페이지와 limit를 상태에 반영 (동기화)
         setCurrentPage(data.currentPage);
-        setLimitPerPage(data.limit);
+        setInputLimitPerPage(data.limit);
       } else {
         setError(data.message || '카드 목록을 불러오는데 실패했습니다.');
       }
@@ -52,25 +52,51 @@ export default function ItemsPage() {
       console.error('카드 목록 조회 오류:', err);
       setError('네트워크 오류 또는 서버에 연결할 수 없습니다.');
     } finally {
-      setLoading(false);
+      setLoading(false); // 데이터 로드 완료 시 로딩 상태 비활성화
     }
-  }, [filterOwnerId, filterRarity, currentPage, limitPerPage, router]);
+  }, []); // fetchCards는 searchParams의 변경에 의해 트리거됩니다.
 
-  // URL 쿼리 파라미터 변경 시 상태 업데이트
+  // URL 쿼리 파라미터 변경 시 상태 업데이트 (초기 로딩 및 브라우저 뒤로가기/앞으로가기)
   useEffect(() => {
-    const ownerIdParam = searchParams.get('ownerId') || '';
     const rarityParam = searchParams.get('rarity') || '';
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
     const limitParam = parseInt(searchParams.get('limit') || '10', 10);
 
-    setFilterOwnerId(ownerIdParam);
-    setFilterRarity(rarityParam);
+    // URL 파라미터로 로컬 입력 상태 및 현재 페이지 상태를 동기화
+    setInputRarity(rarityParam);
+    setInputLimitPerPage(limitParam);
     setCurrentPage(pageParam);
-    setLimitPerPage(limitParam);
 
-    // URL 파라미터가 변경될 때마다 카드 다시 가져오기
-    fetchCards();
-  }, [searchParams, fetchCards]); // searchParams가 변경될 때마다 fetchCards 호출
+    // searchParams가 변경될 때마다 fetchCards를 호출합니다.
+    fetchCards(searchParams);
+  }, [searchParams, fetchCards]);
+
+  // "필터 적용" 버튼 클릭 핸들러
+  const handleApplyFilters = () => {
+    const newQuery = new URLSearchParams();
+    if (inputRarity) newQuery.append('rarity', inputRarity);
+    newQuery.append('page', '1'); // 필터 적용 시 항상 1페이지로 이동
+    newQuery.append('limit', inputLimitPerPage.toString());
+
+    router.push(`/items?${newQuery.toString()}`, { shallow: true });
+  };
+
+  // "필터 초기화" 버튼 클릭 핸들러
+  const handleResetFilters = () => {
+    // 로컬 입력 상태를 초기화합니다.
+    setInputRarity('');
+    setInputLimitPerPage(10); // 기본값으로 리셋
+
+    // URL을 초기 경로로 푸시하여 searchParams 변경을 유도하고, useEffect가 fetchCards를 호출하게 합니다.
+    router.push('/items', { shallow: true });
+  };
+
+  // 페이지네이션 버튼 클릭 핸들러
+  const handlePageChange = (page) => {
+    const currentQuery = new URLSearchParams(searchParams);
+    currentQuery.set('page', page.toString());
+    router.push(`/items?${currentQuery.toString()}`, { shallow: true });
+  };
 
   // 페이지네이션 버튼 렌더링
   const renderPaginationButtons = () => {
@@ -79,10 +105,9 @@ export default function ItemsPage() {
       buttons.push(
         <button
           key={i}
-          onClick={() => setCurrentPage(i)}
-          className={`px-3 py-1 border rounded-md mx-1 ${
-            currentPage === i ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-100'
-          }`}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 border rounded-md mx-1 ${currentPage === i ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-100'
+            }`}
           disabled={loading}
         >
           {i}
@@ -92,7 +117,8 @@ export default function ItemsPage() {
     return buttons;
   };
 
-  if (loading && cards.length === 0) { // 초기 로딩 시에만 전체 로딩 메시지
+  // 초기 로딩 스피너 (데이터가 아예 없을 때)
+  if (loading && cards.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
         <p className="text-lg text-blue-600">카드 목록을 불러오는 중...</p>
@@ -100,9 +126,10 @@ export default function ItemsPage() {
     );
   }
 
+  // 메인 UI 렌더링
   return (
     <div className="flex min-h-screen flex-col items-center p-4 sm:p-8 bg-gray-50">
-      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-md">
+      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-md relative"> {/* relative 추가 */}
         <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">AI 아트 카드 갤러리</h1>
 
         {/* 필터링 UI */}
@@ -110,22 +137,11 @@ export default function ItemsPage() {
           <h2 className="text-xl font-semibold text-gray-800 mb-3">필터</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="filterOwnerId" className="block text-sm font-medium text-gray-700">소유자 ID (본인 카드만 보려면 /me 페이지에서 ID 확인)</label>
-              <input
-                type="text"
-                id="filterOwnerId"
-                value={filterOwnerId}
-                onChange={(e) => setFilterOwnerId(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="소유자 ID 입력"
-              />
-            </div>
-            <div>
-              <label htmlFor="filterRarity" className="block text-sm font-medium text-gray-700">희귀도</label>
+              <label htmlFor="inputRarity" className="block text-sm font-medium text-gray-700">희귀도</label>
               <select
-                id="filterRarity"
-                value={filterRarity}
-                onChange={(e) => setFilterRarity(e.target.value)}
+                id="inputRarity"
+                value={inputRarity}
+                onChange={(e) => setInputRarity(e.target.value)}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               >
                 <option value="">모두</option>
@@ -136,42 +152,29 @@ export default function ItemsPage() {
               </select>
             </div>
             <div>
-                <label htmlFor="limitPerPage" className="block text-sm font-medium text-gray-700">카드 수</label>
-                <select
-                    id="limitPerPage"
-                    value={limitPerPage}
-                    onChange={(e) => {
-                        setLimitPerPage(parseInt(e.target.value, 10));
-                        setCurrentPage(1); // limit 변경 시 첫 페이지로 이동
-                    }}
-                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                >
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="50">50</option>
-                </select>
+              <label htmlFor="inputLimitPerPage" className="block text-sm font-medium text-gray-700">카드 수</label>
+              <select
+                id="inputLimitPerPage"
+                value={inputLimitPerPage}
+                onChange={(e) => setInputLimitPerPage(parseInt(e.target.value, 10))}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+              </select>
             </div>
           </div>
           <div className="mt-4 flex justify-end">
             <button
-              onClick={() => {
-                setCurrentPage(1); // 필터 적용 시 1페이지로 리셋
-                fetchCards(); // 필터 적용
-              }}
+              onClick={handleApplyFilters}
               className="ml-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               필터 적용
             </button>
             <button
-              onClick={() => {
-                setFilterOwnerId('');
-                setFilterRarity('');
-                setCurrentPage(1);
-                setLimitPerPage(10);
-                // URL 초기화
-                router.push('/items', { shallow: true });
-              }}
+              onClick={handleResetFilters}
               className="ml-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               필터 초기화
@@ -183,8 +186,17 @@ export default function ItemsPage() {
           <p className="text-center text-red-600 mb-4">{error}</p>
         )}
 
-        {loading && cards.length > 0 && ( // 데이터는 있지만 추가 로딩 중일 때
-            <p className="text-center text-blue-600 mb-4">카드 목록 업데이트 중...</p>
+        {/* 로딩 오버레이 (데이터가 로딩 중일 때 표시) */}
+        {loading && cards.length > 0 && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
+            <div className="flex flex-col items-center">
+              <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <p className="mt-4 text-lg text-blue-600">카드 목록 업데이트 중...</p>
+            </div>
+          </div>
         )}
 
         {cards.length === 0 && !loading && !error ? (
@@ -192,35 +204,37 @@ export default function ItemsPage() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {cards.map((card) => (
-              <div key={card.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col">
-                <div className="relative w-full h-48 bg-gray-200">
-                  <Image
-                    src={card.imageUrl}
-                    alt={card.title}
-                    fill
-                    style={{ objectFit: 'cover' }}
-                    className="rounded-t-lg"
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-                <div className="p-4 flex-grow flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{card.title}</h3>
-                    <p className="text-sm text-gray-600 mb-1">
-                      <span className="font-medium">희귀도:</span> {card.rarity}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-2">
-                      <span className="font-medium">소유자:</span> {card.owner?.username || '알 수 없음'}
-                    </p>
-                    {card.description && (
-                      <p className="text-sm text-gray-700 line-clamp-2">{card.description}</p>
-                    )}
+              <Link key={card.id} href={`/items/cards/${card.id}`} passHref>
+                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-200">
+                  <div className="relative w-full h-48 bg-gray-200">
+                    <Image
+                      src={card.imageUrl}
+                      alt={card.title}
+                      fill
+                      style={{ objectFit: 'cover' }}
+                      className="rounded-t-lg"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
                   </div>
-                  <div className="mt-4 text-right text-xs text-gray-500">
-                    등록일: {new Date(card.createdAt).toLocaleDateString()}
+                  <div className="p-4 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{card.title}</h3>
+                      <p className="text-sm text-gray-600 mb-1">
+                        <span className="font-medium">희귀도:</span> {card.rarity}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-2">
+                        <span className="font-medium">소유자:</span> {card.owner?.username || '알 수 없음'}
+                      </p>
+                      {card.description && (
+                        <p className="text-sm text-gray-700 line-clamp-2">{card.description}</p>
+                      )}
+                    </div>
+                    <div className="mt-4 text-right text-xs text-gray-500">
+                      등록일: {new Date(card.createdAt).toLocaleDateString()}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         )}
@@ -229,7 +243,7 @@ export default function ItemsPage() {
         {totalPages > 1 && (
           <div className="flex justify-center mt-8 space-x-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              onClick={() => handlePageChange(currentPage - 1)}
               className="px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-100 disabled:opacity-50"
               disabled={currentPage === 1 || loading}
             >
@@ -237,7 +251,7 @@ export default function ItemsPage() {
             </button>
             {renderPaginationButtons()}
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() => handlePageChange(currentPage + 1)}
               className="px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-100 disabled:opacity-50"
               disabled={currentPage === totalPages || loading}
             >
