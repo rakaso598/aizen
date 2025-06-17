@@ -8,19 +8,16 @@ import Link from 'next/link';
 
 export default function ItemsPage() {
   const [cards, setCards] = useState([]);
-  const [loading, setLoading] = useState(true); // 데이터 로딩 중임을 나타내는 일반 로딩 상태
+  // 'loading' 상태 하나로 데이터 로딩 여부를 관리
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [totalCards, setTotalCards] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // 희귀도 드롭다운의 현재 값을 저장할 로컬 상태 (사용자 입력 전용)
   const [inputRarity, setInputRarity] = useState('');
-  // 한 페이지당 카드 수 드롭다운의 현재 값을 저장할 로컬 상태 (사용자 입력 전용)
-  const [inputLimitPerPage, setInputLimitPerPage] = useState(10); // 기본값 10
-
-  // 페이지네이션 UI에 사용될 실제 현재 페이지 상태
+  const [inputLimitPerPage, setInputLimitPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   // 카드 데이터 가져오는 함수
@@ -29,7 +26,6 @@ export default function ItemsPage() {
     setError('');
 
     const query = new URLSearchParams(currentSearchParams);
-    // URL 쿼리 파라미터에서 직접 값을 가져와 사용
     const rarityToFetch = query.get('rarity') || '';
     const pageToFetch = parseInt(query.get('page') || '1', 10);
     const limitToFetch = parseInt(query.get('limit') || '10', 10);
@@ -42,63 +38,54 @@ export default function ItemsPage() {
         setCards(data.cards);
         setTotalCards(data.totalCards);
         setTotalPages(data.totalPages);
-        // 서버에서 받은 실제 페이지와 limit를 상태에 반영 (동기화)
         setCurrentPage(data.currentPage);
         setInputLimitPerPage(data.limit);
       } else {
         setError(data.message || '카드 목록을 불러오는데 실패했습니다.');
+        setCards([]); // 오류 발생 시 카드 목록 초기화
       }
     } catch (err) {
       console.error('카드 목록 조회 오류:', err);
       setError('네트워크 오류 또는 서버에 연결할 수 없습니다.');
+      setCards([]); // 네트워크 오류 시 카드 목록 초기화
     } finally {
       setLoading(false); // 데이터 로드 완료 시 로딩 상태 비활성화
     }
-  }, []); // fetchCards는 searchParams의 변경에 의해 트리거됩니다.
+  }, []);
 
-  // URL 쿼리 파라미터 변경 시 상태 업데이트 (초기 로딩 및 브라우저 뒤로가기/앞으로가기)
   useEffect(() => {
     const rarityParam = searchParams.get('rarity') || '';
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
     const limitParam = parseInt(searchParams.get('limit') || '10', 10);
 
-    // URL 파라미터로 로컬 입력 상태 및 현재 페이지 상태를 동기화
     setInputRarity(rarityParam);
     setInputLimitPerPage(limitParam);
     setCurrentPage(pageParam);
 
-    // searchParams가 변경될 때마다 fetchCards를 호출합니다.
     fetchCards(searchParams);
   }, [searchParams, fetchCards]);
 
-  // "필터 적용" 버튼 클릭 핸들러
   const handleApplyFilters = () => {
     const newQuery = new URLSearchParams();
     if (inputRarity) newQuery.append('rarity', inputRarity);
-    newQuery.append('page', '1'); // 필터 적용 시 항상 1페이지로 이동
+    newQuery.append('page', '1');
     newQuery.append('limit', inputLimitPerPage.toString());
 
     router.push(`/items?${newQuery.toString()}`, { shallow: true });
   };
 
-  // "필터 초기화" 버튼 클릭 핸들러
   const handleResetFilters = () => {
-    // 로컬 입력 상태를 초기화합니다.
     setInputRarity('');
-    setInputLimitPerPage(10); // 기본값으로 리셋
-
-    // URL을 초기 경로로 푸시하여 searchParams 변경을 유도하고, useEffect가 fetchCards를 호출하게 합니다.
+    setInputLimitPerPage(10);
     router.push('/items', { shallow: true });
   };
 
-  // 페이지네이션 버튼 클릭 핸들러
   const handlePageChange = (page) => {
     const currentQuery = new URLSearchParams(searchParams);
     currentQuery.set('page', page.toString());
     router.push(`/items?${currentQuery.toString()}`, { shallow: true });
   };
 
-  // 페이지네이션 버튼 렌더링
   const renderPaginationButtons = () => {
     const buttons = [];
     for (let i = 1; i <= totalPages; i++) {
@@ -117,19 +104,27 @@ export default function ItemsPage() {
     return buttons;
   };
 
-  // 초기 로딩 스피너 (데이터가 아예 없을 때)
-  if (loading && cards.length === 0) {
+  // --- 로딩 UI 통합 및 개선 ---
+  // 페이지 전체 로딩 오버레이
+  if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-lg text-blue-600">카드 목록을 불러오는 중...</p>
+        <div className="flex flex-col items-center p-8 rounded-lg shadow-md bg-white">
+          <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <p className="mt-4 text-lg text-blue-600">카드 목록을 불러오는 중...</p>
+        </div>
       </div>
     );
   }
+  // --- 로딩 UI 통합 및 개선 끝 ---
 
   // 메인 UI 렌더링
   return (
     <div className="flex min-h-screen flex-col items-center p-4 sm:p-8 bg-gray-50">
-      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-md relative"> {/* relative 추가 */}
+      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-md relative">
         <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">AI 아트 카드 갤러리</h1>
 
         {/* 필터링 UI */}
@@ -186,19 +181,7 @@ export default function ItemsPage() {
           <p className="text-center text-red-600 mb-4">{error}</p>
         )}
 
-        {/* 로딩 오버레이 (데이터가 로딩 중일 때 표시) */}
-        {loading && cards.length > 0 && (
-          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
-            <div className="flex flex-col items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              <p className="mt-4 text-lg text-blue-600">카드 목록 업데이트 중...</p>
-            </div>
-          </div>
-        )}
-
+        {/* 데이터가 없고 오류도 없을 때 메시지 */}
         {cards.length === 0 && !loading && !error ? (
           <p className="text-center text-gray-600">카드가 없습니다. 새로운 카드를 생성해보세요!</p>
         ) : (
