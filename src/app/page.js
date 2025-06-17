@@ -1,27 +1,9 @@
 // app/page.js
-'use client'; // 클라이언트 컴포넌트로 지정
+'use client';
 
-import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 export default function Home() {
-  const [hasScrolled, setHasScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setHasScrolled(true);
-      } else {
-        setHasScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-gray-950 to-black text-white overflow-hidden">
       {/* 배경 애니메이션 - 추상적인 시안색/노란색/빨간색 흐름 */}
@@ -31,26 +13,6 @@ export default function Home() {
         <div className="absolute top-1/4 right-1/4 w-1/4 h-1/4 bg-red-500 rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-6000"></div>
         <div className="absolute bottom-1/3 left-1/3 w-1/3 h-1/3 bg-white rounded-full mix-blend-screen filter blur-3xl animate-blob animation-delay-8000"></div>
       </div>
-
-      {/* 네비게이션 바 (스크롤 시 배경 변경) */}
-      <header className={`fixed top-0 left-0 w-full z-50 transition-colors duration-300 ${hasScrolled ? 'bg-black bg-opacity-70 backdrop-blur-md shadow-lg' : 'bg-transparent'}`}>
-        <nav className="container mx-auto px-6 py-4 flex justify-between items-center">
-          <Link href="/" className="text-3xl font-extrabold text-white tracking-wider animate-pulse-fade">
-            Aizen
-          </Link>
-          <div className="space-x-6">
-            <Link href="/items" className="text-lg text-gray-300 hover:text-cyan-400 transition-colors duration-200">
-              카드 탐색
-            </Link>
-            <Link href="/login" className="text-lg text-gray-300 hover:text-yellow-400 transition-colors duration-200">
-              로그인
-            </Link>
-            <Link href="/auth/signup" className="text-lg text-gray-300 hover:text-red-400 transition-colors duration-200">
-              회원가입
-            </Link>
-          </div>
-        </nav>
-      </header>
 
       {/* 메인 히어로 섹션 */}
       <section className="relative z-10 flex flex-col items-center justify-center min-h-screen text-center px-6 pt-24 pb-12">
@@ -138,20 +100,11 @@ export default function Home() {
           <p className="text-2xl text-white mb-10 animate-fade-in animation-delay-500">
             당신만의 AI 아트 컬렉션을 만들고, 글로벌 커뮤니티와 교류하며 무한한 가능성을 탐험하세요.
           </p>
-          <Link href="/auth/signup" className="px-10 py-5 bg-white text-blue-700 font-bold text-2xl rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75 animate-bounce-subtle">
+          <Link href="/auth/signup" className="px-10 py-5 bg-white text-blue-700 font-bold text-2xl rounded-full shadow-2xl transform hover:scale-110 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75">
             무료로 시작하기
           </Link>
         </div>
       </section>
-
-      {/* 푸터 */}
-      <footer className="relative z-10 py-10 bg-gray-950 text-center text-gray-500">
-        <p>&copy; 2025 Aizen. All rights reserved.</p>
-        <p className="mt-2 text-sm">
-          <Link href="/privacy" className="hover:text-white transition-colors duration-200">개인정보처리방침</Link> |{' '}
-          <Link href="/terms" className="hover:text-white transition-colors duration-200">이용약관</Link>
-        </p>
-      </footer>
 
       {/* Tailwind CSS 애니메이션 키프레임 (tailwind.config.js에 추가 권장) */}
       <style jsx global>{`
