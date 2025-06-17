@@ -71,7 +71,7 @@ export const authOptions = {
 
   // 커스텀 로그인 페이지 경로
   pages: {
-    signIn: "/login", // /auth/signin 대신 우리가 만든 /login 페이지를 사용
+    signIn: "/login",
   },
 
   // JWT 서명에 사용될 시크릿 키 (환경 변수에서 가져옴)

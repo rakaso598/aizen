@@ -35,7 +35,7 @@ export default function Header() {
           <Link href="/login" className="text-lg text-gray-300 hover:text-yellow-400 transition-colors duration-200">
             로그인
           </Link>
-          <Link href="/auth/signup" className="text-lg text-gray-300 hover:text-red-400 transition-colors duration-200">
+          <Link href="/signup" className="text-lg text-gray-300 hover:text-red-400 transition-colors duration-200">
             회원가입
           </Link>
         </div>

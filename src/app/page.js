@@ -28,7 +28,7 @@ export default function Home() {
           <Link href="/items" className="px-8 py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-xl rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-75">
             지금 카드 탐색하기
           </Link>
-          <Link href="/auth/signup" className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold text-xl rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75">
+          <Link href="/signup" className="px-8 py-4 bg-transparent border-2 border-white text-white font-bold text-xl rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75">
             나만의 아트 만들기
           </Link>
         </div>

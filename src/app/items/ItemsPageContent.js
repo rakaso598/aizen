@@ -6,14 +6,14 @@ import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
-export default function ItemsPageContent() { // 컴포넌트 이름 변경
+export default function ItemsPageContent() {
   const [cards, setCards] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [totalCards, setTotalCards] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const router = useRouter();
-  const searchParams = useSearchParams(); // 여기서 useSearchParams 사용
+  const searchParams = useSearchParams();
 
   const [inputRarity, setInputRarity] = useState('');
   const [inputLimitPerPage, setInputLimitPerPage] = useState(10);
@@ -91,7 +91,12 @@ export default function ItemsPageContent() { // 컴포넌트 이름 변경
         <button
           key={i}
           onClick={() => handlePageChange(i)}
-          className={`px-3 py-1 border rounded-md mx-1 ${currentPage === i ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 border-blue-600 hover:bg-blue-100'
+          className={`
+            px-4 py-2 rounded-full mx-1 text-lg font-bold
+            transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4
+            ${currentPage === i
+              ? 'bg-cyan-600 text-white shadow-lg focus:ring-cyan-500 focus:ring-opacity-75'
+              : 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-black focus:ring-white focus:ring-opacity-75'
             }`}
           disabled={loading}
         >
@@ -102,37 +107,40 @@ export default function ItemsPageContent() { // 컴포넌트 이름 변경
     return buttons;
   };
 
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center p-8 rounded-lg shadow-md bg-white">
-          <svg className="animate-spin h-10 w-10 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p className="mt-4 text-lg text-blue-600">카드 목록을 불러오는 중...</p>
-        </div>
-      </div>
-    );
-  }
+  // 로딩 스피너는 이제 components/LoadingSpinner.js에서 담당하므로 여기서는 제거합니다.
+  // if (loading) { ... }
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-4 sm:p-8 bg-gray-50">
-      <div className="w-full max-w-4xl bg-white p-8 rounded-lg shadow-md relative">
-        <h1 className="text-3xl font-bold text-center text-blue-600 mb-6">AI 아트 카드 갤러리</h1>
+    // 랜딩 페이지와 동일한 배경 그라데이션 및 최소 높이 적용
+    // 헤더 때문에 pt-24를 줘서 헤더 아래로 내용이 시작되도록 함
+    <div className="relative min-h-screen bg-gradient-to-br from-gray-950 to-black text-white pt-24 pb-12">
+      {/* 배경 애니메이션 (선택 사항: 필요하다면 랜딩 페이지에서 복사)
+          ItemsPageContent는 카드 탐색 페이지이므로, 만약 이 페이지에서도
+          움직이는 blob 애니메이션을 원한다면 랜딩 페이지의 해당 div를 복사하여 추가할 수 있습니다.
+          현재는 제외하여 콘텐츠에 집중하도록 합니다.
+      */}
 
-        <div className="mb-6 p-4 border rounded-md bg-gray-50">
-          <h2 className="text-xl font-semibold text-gray-800 mb-3">필터</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="container mx-auto px-6 py-8 z-10 relative">
+        <h1 className="text-5xl sm:text-6xl font-extrabold mb-6 text-white text-center leading-tight drop-shadow-lg animate-fade-in-up">
+          <span className="text-yellow-400">AI</span> 아트 <span className="text-cyan-400">카드</span> 갤러리
+        </h1>
+        <p className="text-xl sm:text-2xl text-gray-300 text-center mb-10 max-w-3xl mx-auto animate-fade-in animation-delay-500">
+          다양한 AI 생성 아트 카드를 확인하고, 당신의 <span className="text-red-400">특별한 컬렉션</span>을 만들어보세요.
+        </p>
+
+        {/* 필터 섹션 디자인 개선 */}
+        <div className="mb-12 p-6 rounded-xl shadow-2xl bg-gray-900 bg-opacity-70 backdrop-blur-md border border-gray-700 animate-fade-in animation-delay-1000">
+          <h2 className="text-3xl font-bold text-white mb-5 text-center">필터</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label htmlFor="inputRarity" className="block text-sm font-medium text-gray-700">희귀도</label>
+              <label htmlFor="inputRarity" className="block text-lg font-medium text-gray-300 mb-2">희귀도</label>
               <select
                 id="inputRarity"
                 value={inputRarity}
                 onChange={(e) => setInputRarity(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base appearance-none cursor-pointer transition-all duration-200"
               >
-                <option value="">모두</option>
+                <option value="">모든 희귀도</option>
                 <option value="Common">Common</option>
                 <option value="Rare">Rare</option>
                 <option value="Epic">Epic</option>
@@ -140,72 +148,89 @@ export default function ItemsPageContent() { // 컴포넌트 이름 변경
               </select>
             </div>
             <div>
-              <label htmlFor="inputLimitPerPage" className="block text-sm font-medium text-gray-700">카드 수</label>
+              <label htmlFor="inputLimitPerPage" className="block text-lg font-medium text-gray-300 mb-2">페이지당 카드 수</label>
               <select
                 id="inputLimitPerPage"
                 value={inputLimitPerPage}
                 onChange={(e) => setInputLimitPerPage(parseInt(e.target.value, 10))}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                className="mt-1 block w-full px-4 py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-800 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-base appearance-none cursor-pointer transition-all duration-200"
               >
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
+                <option value="5">5개</option>
+                <option value="10">10개</option>
+                <option value="20">20개</option>
+                <option value="50">50개</option>
               </select>
             </div>
           </div>
-          <div className="mt-4 flex justify-end">
+          <div className="mt-8 flex justify-center space-x-4">
             <button
               onClick={handleApplyFilters}
-              className="ml-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-8 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-75"
             >
               필터 적용
             </button>
             <button
               onClick={handleResetFilters}
-              className="ml-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75"
             >
-              필터 초기화
+              초기화
             </button>
           </div>
         </div>
 
         {error && (
-          <p className="text-center text-red-600 mb-4">{error}</p>
+          <p className="text-center text-red-500 text-xl font-medium mb-8 animate-fade-in">
+            {error}
+          </p>
         )}
 
         {cards.length === 0 && !loading && !error ? (
-          <p className="text-center text-gray-600">카드가 없습니다. 새로운 카드를 생성해보세요!</p>
+          <p className="text-center text-gray-400 text-2xl animate-fade-in">
+            카드가 없습니다. <Link href="/signup" className="text-cyan-400 hover:underline">새로운 카드를 생성</Link>해보세요!
+          </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {cards.map((card) => (
               <Link key={card.id} href={`/items/cards/${card.id}`} passHref>
-                <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden flex flex-col cursor-pointer hover:shadow-lg transition-shadow duration-200">
-                  <div className="relative w-full h-48 bg-gray-200">
+                <div className="bg-gray-800 border border-gray-700 rounded-xl shadow-2xl overflow-hidden flex flex-col cursor-pointer transform hover:scale-102 transition-all duration-300 hover:border-cyan-500">
+                  <div className="relative w-full h-56 bg-gray-700"> {/* 이미지 영역 높이 증가 */}
                     <Image
                       src={card.imageUrl}
                       alt={card.title}
                       fill
                       style={{ objectFit: 'cover' }}
-                      className="rounded-t-lg"
+                      className="rounded-t-xl"
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                   </div>
-                  <div className="p-4 flex-grow flex flex-col justify-between">
+                  <div className="p-5 flex-grow flex flex-col justify-between">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">{card.title}</h3>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <span className="font-medium">희귀도:</span> {card.rarity}
+                      <h3 className="text-2xl font-bold text-white mb-2 leading-tight">
+                        {card.title}
+                      </h3>
+                      <p className="text-base text-gray-400 mb-1">
+                        <span className="font-semibold text-gray-300">희귀도:</span>{' '}
+                        {/* 희귀도별 색상 강조 */}
+                        <span className={
+                          card.rarity === 'Legendary' ? 'text-yellow-400 font-bold' :
+                            card.rarity === 'Epic' ? 'text-red-400 font-bold' :
+                              card.rarity === 'Rare' ? 'text-cyan-400 font-bold' :
+                                'text-gray-300'
+                        }>
+                          {card.rarity}
+                        </span>
                       </p>
-                      <p className="text-sm text-gray-600 mb-2">
-                        <span className="font-medium">소유자:</span> {card.owner?.username || '알 수 없음'}
+                      <p className="text-base text-gray-400 mb-2">
+                        <span className="font-semibold text-gray-300">소유자:</span> {card.owner?.username || '알 수 없음'}
                       </p>
                       {card.description && (
-                        <p className="text-sm text-gray-700 line-clamp-2">{card.description}</p>
+                        <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">
+                          {card.description}
+                        </p>
                       )}
                     </div>
-                    <div className="mt-4 text-right text-xs text-gray-500">
-                      등록일: {new Date(card.createdAt).toLocaleDateString()}
+                    <div className="mt-5 text-right text-xs text-gray-500">
+                      등록일: {new Date(card.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </div>
                   </div>
                 </div>
@@ -215,10 +240,10 @@ export default function ItemsPageContent() { // 컴포넌트 이름 변경
         )}
 
         {totalPages > 1 && (
-          <div className="flex justify-center mt-8 space-x-2">
+          <div className="flex justify-center mt-12 space-x-3">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
-              className="px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-100 disabled:opacity-50"
+              className="px-6 py-3 bg-transparent border-2 border-white text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === 1 || loading}
             >
               이전
@@ -226,7 +251,7 @@ export default function ItemsPageContent() { // 컴포넌트 이름 변경
             {renderPaginationButtons()}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
-              className="px-4 py-2 border rounded-md text-blue-600 border-blue-600 hover:bg-blue-100 disabled:opacity-50"
+              className="px-6 py-3 bg-transparent border-2 border-white text-white font-bold text-lg rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={currentPage === totalPages || loading}
             >
               다음
