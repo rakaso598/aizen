@@ -1,127 +1,188 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// prisma/schema.prisma
 
+// Prisma Client를 생성하는 설정
 generator client {
   provider = "prisma-client-js"
 }
 
+// 데이터베이스 연결 설정 (PostgreSQL 사용)
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// ----------------------------------------------------
-// Aizen 프로젝트 데이터 모델 정의
-// ----------------------------------------------------
-
+// ================================================================
+// 1. 사용자 (User) 모델
+// - 플랫폼에 가입한 사용자 정보
+// ================================================================
 model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  username     String    @unique
-  points       Int       @default(0)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
-  // 관계 정의
-  cards        Card[]
-  ratings      Rating[]
-  proposerTrades Trade[] @relation("ProposerTrades") // User가 제안한 거래
-  receiverTrades Trade[] @relation("ReceiverTrades") // User가 받은 거래
-  userChallenges UserChallenge[]
+  id           String    @id @default(cuid()) // 고유 사용자 ID
+  email        String    @unique // 사용자 이메일 (고유, 로그인 ID 역할)
+  passwordHash String    // 해싱된 비밀번호
+  username     String    @unique // 사용자 이름 (고유, 표시 이름)
+  points       Int       @default(0) // 사용자가 보유한 포인트
+  createdAt    DateTime  @default(now()) // 계정 생성일
+  updatedAt    DateTime  @updatedAt // 마지막 업데이트일
+
+  // 관계: 이 사용자가 소유한 카드들
+  cards           Card[]
+  // 관계: 이 사용자가 남긴 카드 평가들
+  ratings         Rating[]
+  // 관계: 이 사용자가 제안자로 참여한 거래들
+  proposerTrades  Trade[]     @relation("ProposerTrades")
+  // 관계: 이 사용자가 수신자로 참여한 거래들
+  receiverTrades  Trade[]     @relation("ReceiverTrades")
+  // 관계: 이 사용자가 참여한 챌린지 기록들
+  userChallenges  UserChallenge[]
+  // 관계: 이 사용자의 포인트 변동 내역
+  pointHistory    PointHistory[]
 }
 
+// ================================================================
+// 2. 카드 (Card) 모델
+// - AI 아트 카드 아이템 정보
+// ================================================================
 model Card {
-  id            String    @id @default(cuid())
-  title         String
-  description   String?
-  imageUrl      String
-  ownerId       String    @map("owner_id") // DB 컬럼명 매핑
-  owner         User      @relation(fields: [ownerId], references: [id])
-  ratingCount   Int       @default(0)
-  averageRating Float     @default(0.0)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id @default(cuid()) // 고유 카드 ID
+  title        String    // 카드의 제목
+  description  String?   // 카드에 대한 상세 설명 (선택 사항)
+  imageUrl     String    // 카드 이미지 URL (실제 이미지 파일은 S3 등 외부 저장소 사용)
+  rarity       String    // 카드 희귀도 (예: "Common", "Rare", "Epic", "Legendary")
   
-  // 관계 정의
-  ratings       Rating[]
-  proposerOffers Trade[] @relation("ProposerOffers") // 카드가 제안자의 카드인 거래
-  receiverRequests Trade[] @relation("ReceiverRequests") // 카드가 수신자의 요청 카드인 거래
+  // 소유자 정보 (User 모델과의 관계)
+  ownerId      String    // 이 카드를 소유한 User의 ID (FK)
+  owner        User      @relation(fields: [ownerId], references: [id]) // User 모델 참조
 
-  @@map("cards") // DB 테이블 이름을 명시적으로 지정
+  createdAt    DateTime  @default(now()) // 카드 생성일 (플랫폼 등록일)
+  updatedAt    DateTime  @updatedAt // 마지막 업데이트일
+
+  // 관계: 이 카드에 대한 평가들
+  ratings         Rating[]
+  // 관계: 이 카드가 제안자의 카드로 사용된 거래들
+  proposerTrades  Trade[]     @relation("ProposerCard")
+  // 관계: 이 카드가 수신자의 요청 카드로 사용된 거래들
+  receiverRequests Trade[]     @relation("ReceiverCard")
+
+  @@index([ownerId]) // ownerId에 인덱스 추가하여 조회 성능 최적화
 }
 
+// ================================================================
+// 3. 평가 (Rating) 모델
+// - 사용자가 카드에 대한 평가를 남기는 기능
+// ================================================================
 model Rating {
-  id        String   @id @default(cuid())
-  cardId    String
-  userId    String
-  value     Int      // 1-5 사이의 별점 값
-  createdAt DateTime @default(now())
+  id        String   @id @default(cuid()) // 고유 평가 ID
+  value     Int      // 평가 점수 (예: 1~5점)
+  comment   String?  // 평가 코멘트 (선택 사항)
 
-  // 관계 정의
-  card      Card     @relation(fields: [cardId], references: [id])
+  // 평가를 남긴 사용자 (User 모델과의 관계)
+  userId    String   // 평가를 남긴 User의 ID (FK)
   user      User     @relation(fields: [userId], references: [id])
 
-  @@unique([cardId, userId]) // 각 카드에 사용자당 한 번만 별점 부여 가능
-  @@map("ratings")
+  // 평가 대상 카드 (Card 모델과의 관계)
+  cardId    String   // 평가 대상 Card의 ID (FK)
+  card      Card     @relation(fields: [cardId], references: [id])
+
+  createdAt DateTime @default(now()) // 평가 생성일
+  updatedAt DateTime @updatedAt // 마지막 업데이트일
+
+  @@unique([userId, cardId]) // 한 사용자는 한 카드에 한 번만 평가 가능
+  @@index([userId])
+  @@index([cardId])
 }
 
-model Challenge {
-  id             String          @id @default(cuid())
-  name           String
-  description    String
-  rewardPoints   Int
-  rewardBadgeUrl String?
-  type           String          // 예: "UPLOAD_N_CARDS", "GIVE_N_RATINGS" (챌린지 유형)
-  targetValue    Int             // 예: N회 (챌린지 목표 값)
-  isRepeatable   Boolean         @default(false) // 반복 가능한 챌린지인지 여부
-
-  // 관계 정의
-  userChallenges UserChallenge[]
-
-  @@map("challenges")
-}
-
-model UserChallenge {
-  id          String    @id @default(cuid())
-  userId      String
-  challengeId String
-  progress    Int       @default(0) // 챌린지 진행도
-  isCompleted Boolean   @default(false) // 챌린지 완료 여부
-  completedAt DateTime? // 챌린지 완료 시간
-
-  // 관계 정의
-  user        User      @relation(fields: [userId], references: [id])
-  challenge   Challenge @relation(fields: [challengeId], references: [id])
-
-  @@unique([userId, challengeId]) // 사용자-챌린지 조합은 유일해야 함
-  @@map("user_challenges")
-}
-
-// 거래 상태를 나타내는 Enum
-enum TradeStatus {
-  PENDING   // 제안 대기 중
-  ACCEPTED  // 제안 수락됨
-  REJECTED  // 제안 거절됨
-  COMPLETED // 거래 완료됨 (카드 소유권 이전 완료)
-  CANCELLED // 거래 취소됨
-}
-
+// ================================================================
+// 4. 거래 (Trade) 모델
+// - 사용자들이 카드 교환을 제안하고 수락하는 기능 (거래 시스템)
+// ================================================================
 model Trade {
-  id             String      @id @default(cuid())
-  proposerId     String      // 거래를 제안한 사용자 ID
-  receiverId     String      // 거래 제안을 받은 사용자 ID
-  proposerCardId String      // 제안자가 교환하려는 카드 ID
-  receiverCardId String      // 수신자가 교환해야 하는 카드 ID
-  status         TradeStatus @default(PENDING) // 현재 거래 상태
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+  id             String    @id @default(cuid()) // 고유 거래 ID
+  
+  // 거래 제안자 정보
+  proposerId     String    // 거래를 제안한 User의 ID (FK)
+  proposer       User      @relation("ProposerTrades", fields: [proposerId], references: [id])
 
-  // 관계 정의
-  proposer       User        @relation("ProposerTrades", fields: [proposerId], references: [id])
-  receiver       User        @relation("ReceiverTrades", fields: [receiverId], references: [id])
-  proposerCard   Card        @relation("ProposerOffers", fields: [proposerCardId], references: [id])
-  receiverCard   Card        @relation("ReceiverRequests", fields: [receiverCardId], references: [id])
+  // 제안자가 교환하고자 하는 카드 (제안하는 카드)
+  proposerCardId String    // 제안하는 Card의 ID (FK)
+  proposerCard   Card      @relation("ProposerCard", fields: [proposerCardId], references: [id])
 
-  @@map("trades")
+  // 거래 수신자 정보
+  receiverId     String    // 거래를 받을 User의 ID (FK)
+  receiver       User      @relation("ReceiverTrades", fields: [receiverId], references: [id])
+
+  // 수신자에게 요청하는 카드 (원하는 카드)
+  receiverCardId String    // 요청하는 Card의 ID (FK)
+  receiverCard   Card      @relation("ReceiverCard", fields: [receiverCardId], references: [id])
+
+  status         String    @default("PENDING") // 거래 상태 (PENDING, ACCEPTED, REJECTED, CANCELLED)
+  createdAt      DateTime  @default(now()) // 거래 제안일
+  updatedAt      DateTime  @updatedAt // 마지막 업데이트일
+
+  @@index([proposerId])
+  @@index([receiverId])
+  @@index([proposerCardId])
+  @@index([receiverCardId])
+}
+
+// ================================================================
+// 5. 챌린지 (Challenge) 모델
+// - 사용자들이 참여할 수 있는 챌린지 정의
+// ================================================================
+model Challenge {
+  id            String   @id @default(cuid()) // 고유 챌린지 ID
+  name          String   @unique // 챌린지 이름
+  description   String   // 챌린지 설명
+  rewardPoints  Int      // 챌린지 성공 시 지급될 포인트
+  startDate     DateTime // 챌린지 시작일
+  endDate       DateTime // 챌린지 종료일
+
+  // 관계: 이 챌린지에 참여한 사용자 기록들
+  userChallenges UserChallenge[]
+}
+
+// ================================================================
+// 6. 사용자-챌린지 (UserChallenge) 모델
+// - 사용자가 챌린지에 참여한 기록 및 진행 상태
+// ================================================================
+model UserChallenge {
+  id            String   @id @default(cuid()) // 고유 사용자-챌린지 기록 ID
+  
+  // 사용자 정보 (User 모델과의 관계)
+  userId        String   // 참여한 User의 ID (FK)
+  user          User     @relation(fields: [userId], references: [id])
+
+  // 챌린지 정보 (Challenge 모델과의 관계)
+  challengeId   String   // 참여한 Challenge의 ID (FK)
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+
+  isCompleted   Boolean  @default(false) // 챌린지 완료 여부
+  completedAt   DateTime? // 챌린지 완료일 (완료 시 기록)
+  progress      Int      @default(0) // 챌린지 진행도 (백분율 또는 특정 수치)
+
+  createdAt     DateTime @default(now()) // 챌린지 참여 시작일
+  updatedAt     DateTime @updatedAt // 마지막 업데이트일
+
+  @@unique([userId, challengeId]) // 한 사용자는 한 챌린지에 한 번만 참여 기록 가짐
+  @@index([userId])
+  @@index([challengeId])
+}
+
+// ================================================================
+// 7. 포인트 내역 (PointHistory) 모델
+// - 사용자의 포인트 변동 내역 기록
+// ================================================================
+model PointHistory {
+  id            String   @id @default(cuid()) // 고유 포인트 내역 ID
+  
+  // 사용자 정보 (User 모델과의 관계)
+  userId        String   // 포인트 변동이 발생한 User의 ID (FK)
+  user          User     @relation(fields: [userId], references: [id])
+
+  amount        Int      // 변동된 포인트 양 (양수: 획득, 음수: 사용)
+  type          String   // 포인트 변동 유형 (예: "CHALLENGE_REWARD", "TRADE_COMMISSION", "PURCHASE", "GIFT")
+  description   String?  // 상세 설명 (예: "일일 챌린지 보상", "카드 판매 수수료")
+  
+  createdAt     DateTime @default(now()) // 변동 발생일
+
+  @@index([userId])
 }
