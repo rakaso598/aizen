@@ -1,17 +1,16 @@
-![Animation_aizen_1](https://github.com/user-attachments/assets/c7605a9b-cd4a-4bf8-8931-da6a09744085)
+# 🃏 [Aizen: AI 아트 카드 갤러리 및 거래 플랫폼](https://aizen-rouge.vercel.app)
 
-## 🃏 [Aizen: AI 아트 카드 갤러리 및 거래 플랫폼](https://aizen-rouge.vercel.app)
+![Animation_aizen_1](https://github.com/user-attachments/assets/c7605a9b-cd4a-4bf8-8931-da6a09744085)
 
 🚨**경고: 현재 테스트 중인 버전입니다. DB와 연동되어 있으니 실제 민감 정보를 절대 입력하지 마세요.** 🚨  
 
 ‼️**주의: 본 플랫폼은 개발 단계에 있으며, 서비스 안정성 및 보안이 보장되지 않습니다.**‼️  
 
-
 ## **1. 프로젝트 소개**
 
-Aizen (아이젠)은 AI-Gen (AI Generation, AI 생성) 이미지 기술을 활용하는 아티스트와 사용자들을 위한 혁신적인 모바일 우선 커뮤니티 플랫폼입니다. 이곳에서 사용자들은 자신만의 독창적인 AI-Gen 아트를 카드 형태로 공유하고, 서로의 작품을 평가하며, 나아가 1:1로 교환하는 독특한 경험을 할 수 있습니다. Aizen은 단순히 이미지를 공유하는 것을 넘어, AI 아트가 새로운 가치를 창출하고 활발히 유통되는 선순환 생태계를 구축하는 것을 목표로 합니다.
+Aizen은 AI-Gen(AI Generation) 이미지 기술을 활용하는 아티스트와 사용자들을 위한 혁신적인 모바일 우선 커뮤니티 플랫폼입니다. 이곳에서 사용자들은 자신만의 독창적인 AI-Gen 아트를 카드 형태로 공유하고, 서로의 작품을 평가하며, 나아가 1:1로 교환하는 독특한 경험을 할 수 있습니다. Aizen은 단순히 이미지를 공유하는 것을 넘어, AI 아트가 새로운 가치를 창출하고 활발히 유통되는 선순환 생태계를 구축하는 것을 목표로 합니다.
 
-**슬로건:** 당신의 AI 아트를 공유하고, 평가하며, 소유하세요.
+#### *슬로건:* 당신의 AI 아트를 공유하고, 평가하며, 소유하세요.
 
 **핵심 가치:**
 
@@ -28,10 +27,7 @@ Aizen (아이젠)은 AI-Gen (AI Generation, AI 생성) 이미지 기술을 활�
 #### *배포/호스팅/버전관리*
 ![](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
 
-
 ## **3. 주요 기능 (MVP)**
-
-Aizen의 핵심 MVP 기능은 다음과 같습니다.
 
 * **사용자 인증 및 프로필:**
     * 회원가입, 로그인/로그아웃, 비밀번호 재설정
@@ -62,7 +58,7 @@ Aizen의 핵심 MVP 기능은 다음과 같습니다.
 
 ## **5. 향후 확장 계획**
 
-MVP 이후에는 다음과 같은 기능들을 추가하여 Aizen 플랫폼을 더욱 고도화할 예정입니다.
+MVP 이후에는 다음과 같은 기능들을 추가하여 Aizen 플랫폼을 고도화할 예정입니다.
 
 * 소셜 로그인 연동
 * 댓글, 좋아요, 팔로우 등 소셜 커뮤니티 기능
