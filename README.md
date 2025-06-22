@@ -21,7 +21,23 @@ Aizen (아이젠)은 AI-Gen (AI Generation, AI 생성) 이미지 기술을 활�
 * **저작권 부담 최소화:** AI 생성 이미지에 초점을 맞춰 개발 및 운영상의 저작권 부담을 경감합니다.
 * **미학적 경험:** 강렬한 색상 대비와 신비로운 분위기를 통해 Aizen만의 독특한 시각적 경험을 제공합니다.
 
-## **2. 주요 기능 (MVP)**
+## **2. 기술 스택**
+
+### 기술 스택
+#### *프론트엔드/백엔드*
+![](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)
+#### *데이터베이스*
+![](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
+#### *ORM*
+![](https://img.shields.io/badge/Prisma-2D3748?style=for-the-badge&logo=prisma&logoColor=white)
+#### *배포/호스팅*
+![](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+#### *버전 관리*
+![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+#### *스타일링*
+![](https://img.shields.io/badge/Tailwind%20CSS-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)
+
+## **3. 주요 기능 (MVP)**
 
 Aizen의 핵심 MVP 기능은 다음과 같습니다.
 
@@ -45,18 +61,6 @@ Aizen의 핵심 MVP 기능은 다음과 같습니다.
     * 보낸/받은 거래 제안 목록 확인 및 알림
     * 거래 제안 수락/거절 기능
     * 거래 수락 시 안전한 카드 소유권 자동 이전
-
-## **3. 기술 스택**
-
-Aizen 프로젝트는 다음과 같은 기술 스택으로 개발됩니다.
-
-* **프론트엔드/백엔드:** Next.js (App Router 기반, TypeScript)
-* **데이터베이스:** PostgreSQL
-* **ORM:** Prisma
-* **배포/호스팅:** Vercel
-* **버전 관리:** GitHub
-* **이미지 스토리지:** AWS S3 또는 Google Cloud Storage
-* **스타일링:** Tailwind CSS
 
 ## **4. 개발 워크플로우**
 
