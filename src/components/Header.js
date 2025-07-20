@@ -30,7 +30,7 @@ export default function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 backdrop-blur-md border-b border-gray-700 shadow-lg">
-      <div className="container mx-auto px-2 sm:px-6 flex items-center h-10 sm:h-14 justify-center">
+      <div className="container mx-auto px-2 sm:px-6 flex items-center h-12 sm:h-16 justify-center">
         {/* GNB: 로고 없이, '홈' 메뉴 포함 모든 메뉴를 한 줄에 동일한 간격/스타일로 중앙 정렬 */}
         <nav className="flex items-center gap-2 sm:gap-4">
           <Link
