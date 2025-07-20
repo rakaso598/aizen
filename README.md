@@ -32,7 +32,6 @@ Aizen은 AI-Gen(AI Generation) 이미지 기술을 활용하는 아티스트와 
 
 ![](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) ![](https://img.shields.io/badge/Neon%20DB-4A4A4A?style=for-the-badge&logo=neon&logoColor=white)
 
-
 ## **3. 주요 기능 (MVP)**
 
 ### ✅ **완성된 기능들**
@@ -131,9 +130,26 @@ npm run dev
 
 브라우저에서 `http://localhost:3000`으로 접속하세요.
 
+## **0. 프로젝트 구조**
+
+```
+aizen/
+  ├─ src/
+  │   ├─ app/                # Next.js 라우트 및 페이지, API 엔드포인트
+  │   ├─ components/         # 공통 UI 컴포넌트
+  │   └─ utils/              # 유틸리티 함수
+  ├─ prisma/                 # Prisma 스키마 및 마이그레이션
+  ├─ public/                 # 정적 파일(이미지, 아이콘 등)
+  ├─ README.md
+  ├─ package.json
+  └─ ...
+```
+
+- 각 주요 폴더 및 파일의 역할을 위와 같이 참고하세요.
+
 ## **5. 개발 워크플로우**
 
-- **모바일 퍼스트:** 모든 UI/UX는 모바일 기기에서의 최적의 경험을 위해 설계됩니다.
+- **모바일 퍼스트:** 모든 UI/UX는 모바일 기기에서의 최적의 경험을 위해 설계됩니다. Tailwind CSS의 유틸리티 클래스와 Next.js의 동적 라우팅을 적극 활용하여 반응형 UI를 구현하였습니다.
 - **애자일 방법론:** 기능을 작은 단위로 나누어 구현하고 테스트하는 반복적인 개발 방식을 채택합니다.
 - **CI/CD:** GitHub와 Vercel을 연동하여 코드 변경 시 자동 빌드, 테스트 및 배포를 진행합니다.
 
@@ -209,7 +225,7 @@ MVP 이후에는 다음과 같은 기능들을 추가하여 Aizen 플랫폼을 �
 
 🚀 **지금 바로 Aizen의 여정을 시작하세요!**
 
-## 테스트(Jest) 실행 방법
+## **11. 테스트(Jest) 실행 및 커버리지 확인 방법**
 
 이 프로젝트는 [Jest](https://jestjs.io/)와 [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)를 사용한 단위 테스트를 지원합니다.
 
@@ -235,15 +251,24 @@ npx jest
 npm test
 ```
 
-### 3. 테스트 파일 구조
+### 3. 테스트 커버리지 리포트 확인
+
+아래 명령어로 테스트 커버리지 리포트를 확인할 수 있습니다:
+
+```bash
+npx jest --coverage
+```
+
+### 4. 테스트 파일 구조
 
 - `src/app/items/__tests__/ItemsPageContent.test.js` : 카드 갤러리 페이지 테스트
 - `src/app/items/cards/[id]/__tests__/CardDetailPage.test.js` : 카드 상세 페이지 테스트
 - `src/components/__tests__/LoadingSpinner.test.js` : 로딩 스피너 컴포넌트 테스트
 - `src/components/__tests__/Header.test.js` : 헤더 컴포넌트 테스트
 - `src/components/__tests__/Footer.test.js` : 푸터 컴포넌트 테스트
+- `src/app/api/` 하위 각 API 엔드포인트별로 `route.test.ts` 파일이 존재합니다.
 
-### 4. 테스트 예시
+### 5. 테스트 예시
 
 ```js
 import { render, screen } from "@testing-library/react";
@@ -255,7 +280,27 @@ test("헤더에 로고가 보인다", () => {
 });
 ```
 
-### 5. 참고
+### 6. 참고
 
-- 테스트는 `__tests__` 폴더 또는 `*.test.js` 파일에 작성합니다.
+- 테스트는 `__tests__` 폴더 또는 `*.test.js`/`*.test.ts` 파일에 작성합니다.
 - 더 많은 테스트를 추가하고 싶다면 기존 예시를 참고해 자유롭게 작성하세요.
+
+## **12. 기여 가이드 및 코드 스타일**
+
+- 코드 스타일은 ESLint, Prettier를 따릅니다. (설정 파일: `eslint.config.mjs`, `prettier.config.js` 등)
+- 커밋 메시지는 Conventional Commits 규칙을 권장합니다.
+- PR(Pull Request) 생성 전 반드시 테스트를 통과시켜 주세요.
+
+## **13. FAQ / 문제 해결**
+
+### Q. DB 연결 오류가 발생해요!
+
+- `.env.local`의 `DATABASE_URL`이 올바른지, DB가 실행 중인지 확인하세요.
+
+### Q. Prisma 마이그레이션이 안 돼요!
+
+- `npx prisma generate`와 `npx prisma db push`를 순서대로 실행하세요.
+
+### Q. 기타 문의
+
+- 이슈 트래커에 남겨주시면 빠르게 답변드리겠습니다.
