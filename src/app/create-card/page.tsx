@@ -4,8 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; // useSession 훅 임포트
-import LoadingSpinner from "../components/LoadingSpinner"; // 전체 페이지 로딩 스피너
-import SmallLoadingSpinner from "../components/SmallLoadingSpinner"; // 새로 만든 작은 스피너 임포트
+import LoadingSpinner from "src/components/LoadingSpinner"; // 전체 페이지 로딩 스피너
+import SmallLoadingSpinner from "src/components/SmallLoadingSpinner"; // 새로 만든 작은 스피너 임포트
 import Image from "next/image"; // Image 컴포넌트 임포트
 import Link from "next/link"; // Link 컴포넌트 임포트
 import Modal from "../../components/Modal";
