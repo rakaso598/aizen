@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 // import { verifyToken } from '@/utils/auth'; // 이전 JWT 인증 유틸리티 주석 처리 또는 삭제
 import { getServerSession } from "next-auth"; // NextAuth.js 사용
-import { authOptions } from "../../auth/[...nextauth]/route"; // NextAuth.js 설정 파일 경로
+import { authOptions } from "../../auth/[...nextauth]/authOptions"; // NextAuth.js 설정 파일 경로
 import { Session } from "next-auth";
 type MySession = Session & {
   user: { id: string; name?: string; email?: string; image?: string };

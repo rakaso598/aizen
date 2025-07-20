@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
-import { verifyToken } from "src/utils/auth";
+import { verifyToken } from "../../../../utils/auth";
 
 const prisma = new PrismaClient();
 
@@ -12,7 +12,20 @@ export async function PUT(request: Request) {
   if (authResult.error) {
     return authResult.error;
   }
-  const userId = authResult.decoded.userId;
+  let userId: string | undefined = undefined;
+  if (
+    authResult.decoded &&
+    typeof authResult.decoded === "object" &&
+    "userId" in authResult.decoded
+  ) {
+    userId = (authResult.decoded as any).userId;
+  }
+  if (!userId) {
+    return NextResponse.json(
+      { message: "유효하지 않은 토큰입니다." },
+      { status: 401 }
+    );
+  }
 
   try {
     const { currentPassword, newPassword } = await request.json();
