@@ -2,6 +2,8 @@
 
 ![Animation_aizen_1](https://github.com/user-attachments/assets/c7605a9b-cd4a-4bf8-8931-da6a09744085)
 
+<img width="1108" height="865" alt="image" src="https://github.com/user-attachments/assets/da145bdf-0553-4a65-9228-ffa77e7ea4ef" />
+
 🚨**경고: 현재 테스트 중인 버전입니다. DB와 연동되어 있으니 실제 민감 정보를 절대 입력하지 마세요.** 🚨
 
 ‼️**주의: 본 플랫폼은 개발 단계에 있으며, 서비스 안정성 및 보안이 보장되지 않습니다.**‼️
