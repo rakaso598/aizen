@@ -4,9 +4,9 @@
 
 <img width="1108" height="865" alt="image" src="https://github.com/user-attachments/assets/da145bdf-0553-4a65-9228-ffa77e7ea4ef" />
 
-🚨**경고: 현재 테스트 중인 버전입니다. DB와 연동되어 있으니 실제 민감 정보를 절대 입력하지 마세요.** 🚨
+- 🚨**경고: 현재 테스트 중인 버전입니다. DB와 연동되어 있으니 실제 민감 정보를 절대 입력하지 마세요.** 🚨
 
-‼️**주의: 본 플랫폼은 개발 단계에 있으며, 서비스 안정성 및 보안이 보장되지 않습니다.**‼️
+- ‼️**주의: 본 플랫폼은 개발 단계에 있으며, 서비스 안정성 및 보안이 보장되지 않습니다.**‼️
 
 ## **1. 프로젝트 소개**
 
@@ -30,7 +30,8 @@ Aizen은 AI-Gen(AI Generation) 이미지 기술을 활용하는 아티스트와 
 
 #### _배포/호스팅/버전관리_
 
-![](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) ![](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)
+![](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white) ![](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white) ![](https://img.shields.io/badge/Neon%20DB-4A4A4A?style=for-the-badge&logo=neon&logoColor=white)
+
 
 ## **3. 주요 기능 (MVP)**
 
