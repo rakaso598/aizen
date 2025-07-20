@@ -4,27 +4,31 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link"; // 로그인 페이지로 이동하는 Link 컴포넌트 추가
+import Modal from "../../components/Modal";
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage("");
+    setModalOpen(false); // 폼 제출 시 모달 닫기
     setIsSuccess(false);
 
     if (password !== confirmPassword) {
-      setMessage("비밀번호가 일치하지 않습니다.");
+      setModalMsg("비밀번호가 일치하지 않습니다.");
+      setModalOpen(true);
       return;
     }
     if (password.length < 6) {
-      setMessage("비밀번호는 최소 6자 이상이어야 합니다.");
+      setModalMsg("비밀번호는 최소 6자 이상이어야 합니다.");
+      setModalOpen(true);
       return;
     }
 
@@ -40,19 +44,22 @@ export default function SignupPage() {
       const data = await response.json();
 
       if (response.ok) {
-        setMessage(data.message || "회원가입에 성공했습니다!");
+        setModalMsg(data.message || "회원가입에 성공했습니다!");
         setIsSuccess(true);
+        setModalOpen(true);
         setTimeout(() => {
           router.push("/login");
         }, 2000);
       } else {
-        setMessage(data.message || "회원가입에 실패했습니다.");
+        setModalMsg(data.message || "회원가입에 실패했습니다.");
         setIsSuccess(false);
+        setModalOpen(true);
       }
     } catch (error) {
       console.error("회원가입 요청 중 오류 발생:", error);
-      setMessage("네트워크 오류 또는 서버에 연결할 수 없습니다.");
+      setModalMsg("네트워크 오류 또는 서버에 연결할 수 없습니다.");
       setIsSuccess(false);
+      setModalOpen(true);
     }
   };
 
@@ -70,16 +77,6 @@ export default function SignupPage() {
               <span className="text-cyan-400">Aizen</span>의 멤버가 되어보세요
             </p>
           </div>
-
-          {message && (
-            <p
-              className={`text-center text-base font-medium ${
-                isSuccess ? "text-green-400" : "text-red-500"
-              }`}
-            >
-              {message}
-            </p>
-          )}
 
           {/* 회원가입 폼 */}
           <div className="p-4 sm:p-6 bg-gray-800 rounded-xl shadow-2xl border border-gray-700 animate-fade-in animation-delay-1000">
@@ -196,6 +193,9 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        {modalMsg}
+      </Modal>
     </div>
   );
 }

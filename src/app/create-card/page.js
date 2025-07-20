@@ -8,6 +8,7 @@ import LoadingSpinner from "@/components/LoadingSpinner"; // 전체 페이지 �
 import SmallLoadingSpinner from "@/components/SmallLoadingSpinner"; // 새로 만든 작은 스피너 임포트
 import Image from "next/image"; // Image 컴포넌트 임포트
 import Link from "next/link"; // Link 컴포넌트 임포트
+import Modal from "../../components/Modal";
 
 export default function CreateCardPage() {
   const [title, setTitle] = useState("");
@@ -15,6 +16,8 @@ export default function CreateCardPage() {
   const [imageUrl, setImageUrl] = useState("");
   const [rarity, setRarity] = useState("Common");
   const [isLoadingButton, setIsLoadingButton] = useState(false); // 버튼 로딩 상태 추가
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
 
   const router = useRouter();
   const { data: session, status } = useSession(); // useSession 훅 사용
@@ -32,7 +35,8 @@ export default function CreateCardPage() {
     setIsLoadingButton(true); // 버튼 로딩 시작
 
     if (status !== "authenticated") {
-      alert("카드를 생성하려면 먼저 로그인해야 합니다.");
+      setModalMsg("카드를 생성하려면 먼저 로그인해야 합니다.");
+      setModalOpen(true);
       setIsLoadingButton(false); // 로딩 종료
       return;
     }
@@ -59,14 +63,16 @@ export default function CreateCardPage() {
         setRarity("Common");
       } else {
         // 카드 생성 실패 시 (alert 또는 폼 내부 메시지 등으로 처리)
-        alert(data.message || "카드 생성에 실패했습니다.");
+        setModalMsg(data.message || "카드 생성에 실패했습니다.");
+        setModalOpen(true);
         if (response.status === 401) {
           router.push("/login");
         }
       }
     } catch (error) {
       console.error("카드 생성 요청 중 오류 발생:", error);
-      alert("네트워크 오류 또는 서버에 연결할 수 없습니다.");
+      setModalMsg("네트워크 오류 또는 서버에 연결할 수 없습니다.");
+      setModalOpen(true);
     } finally {
       setIsLoadingButton(false); // 로딩 종료 (성공/실패와 관계없이)
     }
@@ -251,9 +257,8 @@ export default function CreateCardPage() {
                   <div className="pt-2 sm:pt-3">
                     <Link
                       href={`/items/cards/${generatedCard.id}`}
-                      className="w-full sm:w-auto inline-block px-6 py-3 sm:px-8 sm:py-4 bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-base sm:text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-75 text-center"
-                    >
-                      카드 상세보기
+                      className="w-full sm:w-auto inline-block px-6 py-3 sm:px-8 sm:py-4 bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-base sm:text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-75 text-center">
+                        카드 상세보기
                     </Link>
                   </div>
                 </div>
@@ -374,6 +379,9 @@ export default function CreateCardPage() {
           animation-delay: 8s;
         }
       `}</style>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        {modalMsg}
+      </Modal>
     </div>
   );
 }

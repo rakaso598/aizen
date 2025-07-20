@@ -5,11 +5,14 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Modal from "../../components/Modal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMsg, setModalMsg] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -25,12 +28,16 @@ export default function LoginPage() {
 
       if (result.error) {
         setError(result.error);
+        setModalMsg("로그인에 실패했습니다.");
+        setModalOpen(true);
       } else {
         router.push("/");
       }
     } catch (err) {
       console.error("로그인 요청 중 오류 발생:", err);
       setError("네트워크 오류 또는 서버에 연결할 수 없습니다.");
+      setModalMsg("네트워크 오류 또는 서버에 연결할 수 없습니다.");
+      setModalOpen(true);
     }
   };
 
@@ -136,6 +143,9 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+        {modalMsg}
+      </Modal>
     </div>
   );
 }
