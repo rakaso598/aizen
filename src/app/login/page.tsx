@@ -15,7 +15,7 @@ export default function LoginPage() {
   const [modalMsg, setModalMsg] = useState("");
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -26,8 +26,8 @@ export default function LoginPage() {
         password,
       });
 
-      if (result.error) {
-        setError(result.error);
+      if (result && (result as any).error) {
+        setError((result as any).error);
         setModalMsg("로그인에 실패했습니다.");
         setModalOpen(true);
       } else {

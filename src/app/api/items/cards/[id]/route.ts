@@ -1,13 +1,17 @@
 // app/api/items/cards/[id]/route.js
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getServerSession, Session } from "next-auth";
+import { authOptions } from "../../../auth/[...nextauth]/route";
 
 const prisma = new PrismaClient();
 
+type MySession = Session & {
+  user: { id: string; name?: string; email?: string; image?: string };
+};
+
 // GET: 특정 카드 상세 정보 조회
-export async function GET(request, context) {
+export async function GET(request: Request, context: { params: any }) {
   try {
     const { params } = context;
     const { id } = await params;
@@ -74,15 +78,15 @@ export async function GET(request, context) {
 }
 
 // PUT: 카드 정보 수정 (소유자만 가능)
-export async function PUT(request, context) {
+export async function PUT(request: Request, context: { params: any }) {
   try {
     const { params } = context;
     const { id } = await params;
     const { title, description, rarity, imageUrl } = await request.json();
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }
@@ -169,14 +173,14 @@ export async function PUT(request, context) {
 export const PATCH = PUT;
 
 // DELETE: 카드 삭제 (소유자만 가능)
-export async function DELETE(request, context) {
+export async function DELETE(request: Request, context: { params: any }) {
   try {
     const { params } = context;
     const { id } = await params;
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }

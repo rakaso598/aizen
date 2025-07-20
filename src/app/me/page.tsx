@@ -1,28 +1,43 @@
 // app/me/page.js
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
+import type { Session } from "next-auth";
+
+type MySession = Session & {
+  user: {
+    id: string;
+    name?: string;
+    username?: string;
+    email?: string;
+    image?: string;
+    points?: number;
+  };
+};
 
 export default function MePage() {
   // useSession 훅을 사용하여 세션 데이터와 상태를 가져옵니다.
-  const { data: session, status } = useSession();
+  const { data: sessionData, status } = useSession();
+  const session = sessionData as MySession | null;
   const router = useRouter();
 
   // 세션 상태가 변경될 때마다 리다이렉트 로직을 처리합니다.
   useEffect(() => {
     // 세션 로딩 중이 아니고, 인증되지 않은 상태라면 로그인 페이지로 리다이렉트
-    if (status === 'unauthenticated') {
-      router.push('/login');
+    if (status === "unauthenticated") {
+      router.push("/login");
     }
   }, [status, router]);
 
   // 세션 정보가 로딩 중일 때
-  if (status === 'loading') {
+  if (status === "loading") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-950 to-black text-white">
-        <p className="text-lg text-cyan-400 animate-pulse">사용자 정보를 불러오는 중...</p>
+        <p className="text-lg text-cyan-400 animate-pulse">
+          사용자 정보를 불러오는 중...
+        </p>
       </div>
     );
   }
@@ -41,10 +56,30 @@ export default function MePage() {
         </h1>
         {session.user && ( // session.user 객체가 존재하는지 확인
           <div className="space-y-4 text-left text-gray-300">
-            <p className="text-lg"><strong>ID:</strong> <span className="text-cyan-200">{session.user.id}</span></p>
-            <p className="text-lg"><strong>이메일:</strong> <span className="text-cyan-200">{session.user.email}</span></p>
-            <p className="text-lg"><strong>사용자 이름:</strong> <span className="text-cyan-200">{session.user.name || session.user.username}</span></p> {/* name 또는 username 사용 */}
-            <p className="text-lg"><strong>포인트:</strong> <span className="text-cyan-200">{session.user.points || '정보 없음'}</span></p> {/* points 정보가 없을 경우 대비 */}
+            <p className="text-lg">
+              <strong>ID:</strong>{" "}
+              <span className="text-cyan-200">
+                {session?.user?.id || "정보 없음"}
+              </span>
+            </p>
+            <p className="text-lg">
+              <strong>이메일:</strong>{" "}
+              <span className="text-cyan-200">{session.user.email}</span>
+            </p>
+            <p className="text-lg">
+              <strong>사용자 이름:</strong>{" "}
+              <span className="text-cyan-200">
+                {session?.user?.name || session?.user?.username || "정보 없음"}
+              </span>
+            </p>{" "}
+            {/* name 또는 username 사용 */}
+            <p className="text-lg">
+              <strong>포인트:</strong>{" "}
+              <span className="text-cyan-200">
+                {session?.user?.points ?? "정보 없음"}
+              </span>
+            </p>{" "}
+            {/* points 정보가 없을 경우 대비 */}
             {/* createdAt, updatedAt 정보는 session.user에 직접 포함되지 않을 수 있습니다.
                 필요하다면, 서버 사이드에서 getServerSession을 사용하여 더 많은 정보를 가져와야 합니다.
                 하지만 여기서는 클라이언트 useSession()만 사용하므로 이 필드들은 제거했습니다.
@@ -52,7 +87,7 @@ export default function MePage() {
           </div>
         )}
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })} // 로그아웃 후 로그인 페이지로 이동
+          onClick={() => signOut({ callbackUrl: "/login" })} // 로그아웃 후 로그인 페이지로 이동
           className="mt-8 w-full flex justify-center py-3 px-4 border border-transparent rounded-full shadow-lg text-lg font-bold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-75 transform hover:scale-105 transition-all duration-300"
         >
           로그아웃

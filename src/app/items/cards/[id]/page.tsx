@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import type { Session } from "next-auth";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
@@ -9,12 +10,38 @@ import LoadingSpinner from "../../../../components/LoadingSpinner";
 import Link from "next/link";
 import Modal from "../../../../components/Modal";
 
-export default function CardDetailPage() {
-  const { id } = useParams();
-  const router = useRouter();
-  const { data: session } = useSession();
+// 카드, 평점 타입 선언
+interface Card {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  rarity: "Common" | "Rare" | "Epic" | "Legendary";
+  owner?: { id: string; username: string };
+  createdAt: string;
+  ratings?: Rating[];
+  averageRating?: number;
+  totalRatings?: number;
+}
+interface Rating {
+  id: string;
+  rating: number;
+  comment?: string;
+  user?: { id: string; username: string };
+  createdAt: string;
+}
 
-  const [card, setCard] = useState(null);
+type MySession = Session & {
+  user: { id: string; name?: string; email?: string; image?: string };
+};
+
+export default function CardDetailPage() {
+  const { id } = useParams<{ id: string }>();
+  const router = useRouter();
+  const { data: sessionData } = useSession();
+  const session = sessionData as MySession | null;
+
+  const [card, setCard] = useState<Card | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rating, setRating] = useState(0);
@@ -23,13 +50,13 @@ export default function CardDetailPage() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
-  const [myCards, setMyCards] = useState([]);
+  const [myCards, setMyCards] = useState<Card[]>([]);
   const [selectedMyCardId, setSelectedMyCardId] = useState("");
   const [editMode, setEditMode] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editImageUrl, setEditImageUrl] = useState("");
-  const [editRarity, setEditRarity] = useState("");
+  const [editRarity, setEditRarity] = useState<Card["rarity"]>("Common");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [deleteWithRatings, setDeleteWithRatings] = useState(false);
   const [pendingDelete, setPendingDelete] = useState(false);
@@ -40,7 +67,7 @@ export default function CardDetailPage() {
 
   // 내 카드 목록 불러오기
   useEffect(() => {
-    if (session?.user?.id) {
+    if (session && session.user && session.user.id) {
       fetch(`/api/items/cards?ownerId=${session.user.id}`)
         .then((res) => res.json())
         .then((data) => {
@@ -70,7 +97,7 @@ export default function CardDetailPage() {
     }
   };
 
-  const handleRatingSubmit = async (e) => {
+  const handleRatingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!session) {
@@ -134,8 +161,8 @@ export default function CardDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           proposerCardId: selectedMyCardId,
-          receiverId: card.owner.id,
-          receiverCardId: card.id,
+          receiverId: card?.owner?.id,
+          receiverCardId: card?.id,
         }),
       });
       const data = await response.json();
@@ -203,7 +230,7 @@ export default function CardDetailPage() {
     }
   };
 
-  const getRarityColor = (rarity) => {
+  const getRarityColor = (rarity: Card["rarity"]) => {
     switch (rarity) {
       case "Legendary":
         return "text-yellow-400";
@@ -216,7 +243,7 @@ export default function CardDetailPage() {
     }
   };
 
-  const getRarityBgColor = (rarity) => {
+  const getRarityBgColor = (rarity: Card["rarity"]) => {
     switch (rarity) {
       case "Legendary":
         return "bg-yellow-400/20 border-yellow-400";
@@ -266,6 +293,7 @@ export default function CardDetailPage() {
 
   // 수정 모드 진입
   const startEdit = () => {
+    if (!card) return;
     setEditTitle(card.title);
     setEditDescription(card.description || "");
     setEditImageUrl(card.imageUrl);
@@ -451,7 +479,9 @@ export default function CardDetailPage() {
                         </label>
                         <select
                           value={editRarity}
-                          onChange={(e) => setEditRarity(e.target.value)}
+                          onChange={(e) =>
+                            setEditRarity(e.target.value as Card["rarity"])
+                          }
                           className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
                         >
                           <option value="Common">Common</option>
@@ -682,7 +712,7 @@ export default function CardDetailPage() {
           )}
         </div>
       </div>
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="알림">
         {modalMsg}
       </Modal>
       {/* 삭제 확인 모달 */}
@@ -690,6 +720,7 @@ export default function CardDetailPage() {
         open={deleteConfirmOpen}
         onClose={() => setDeleteConfirmOpen(false)}
         hideDefaultCloseButton={true}
+        title="카드 삭제 확인"
       >
         {deleteWithRatings ? (
           <div className="text-center">

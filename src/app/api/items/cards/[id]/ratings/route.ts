@@ -2,20 +2,24 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../../../../auth/[...nextauth]/route";
+import { Session } from "next-auth";
+type MySession = Session & {
+  user: { id: string; name?: string; email?: string; image?: string };
+};
 
 const prisma = new PrismaClient();
 
 // POST: 카드에 평가 추가
-export async function POST(request, context) {
+export async function POST(request: Request, context: { params: any }) {
   try {
     const { params } = context;
     const { id: cardId } = await params;
     const { value, comment } = await request.json();
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }
@@ -106,7 +110,7 @@ export async function POST(request, context) {
 }
 
 // GET: 카드의 모든 평가 조회
-export async function GET(request, context) {
+export async function GET(request: Request, context: { params: any }) {
   try {
     const { params } = context;
     const { id: cardId } = await params;

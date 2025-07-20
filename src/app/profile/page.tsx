@@ -7,15 +7,37 @@ import { useRouter } from "next/navigation";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Modal from "../../components/Modal";
 
+interface Profile {
+  id: string;
+  username: string;
+  email: string;
+  points: number;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    cards?: number;
+    ratings?: number;
+    proposerTrades?: number;
+    receiverTrades?: number;
+  };
+  bio?: string;
+}
+
 export default function ProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-  const [profile, setProfile] = useState(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
-  const [editData, setEditData] = useState({ username: "" });
+  interface EditData {
+    username: string;
+    password?: string;
+    newPassword?: string;
+    confirmPassword?: string;
+  }
+  const [editData, setEditData] = useState<EditData>({ username: "" });
   const [submitting, setSubmitting] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
@@ -57,12 +79,14 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setEditData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdate = async (e) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
@@ -217,7 +241,7 @@ export default function ProfilePage() {
                     <div className="grid grid-cols-2 gap-3 sm:gap-4">
                       <div className="text-center p-3 sm:p-4 bg-gray-700 rounded-lg">
                         <div className="text-2xl sm:text-3xl font-bold text-cyan-400">
-                          {profile._count?.cards || 0}
+                          {profile?._count?.cards || 0}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-300">
                           보유 카드
@@ -225,7 +249,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center p-3 sm:p-4 bg-gray-700 rounded-lg">
                         <div className="text-2xl sm:text-3xl font-bold text-yellow-400">
-                          {profile.points.toLocaleString()}
+                          {profile?.points?.toLocaleString?.() || 0}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-300">
                           포인트
@@ -233,7 +257,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center p-3 sm:p-4 bg-gray-700 rounded-lg">
                         <div className="text-2xl sm:text-3xl font-bold text-red-400">
-                          {profile._count?.ratings || 0}
+                          {profile?._count?.ratings || 0}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-300">
                           평가 횟수
@@ -241,7 +265,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center p-3 sm:p-4 bg-gray-700 rounded-lg">
                         <div className="text-2xl sm:text-3xl font-bold text-green-400">
-                          {profile._count?.proposerTrades || 0}
+                          {profile?._count?.proposerTrades || 0}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-300">
                           보낸 거래
@@ -249,7 +273,7 @@ export default function ProfilePage() {
                       </div>
                       <div className="text-center p-3 sm:p-4 bg-gray-700 rounded-lg">
                         <div className="text-2xl sm:text-3xl font-bold text-purple-400">
-                          {profile._count?.receiverTrades || 0}
+                          {profile?._count?.receiverTrades || 0}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-300">
                           받은 거래
@@ -305,14 +329,13 @@ export default function ProfilePage() {
                         </label>
                         <textarea
                           id="bio"
-                          value={profile.bio || ""}
+                          value={profile?.bio || ""}
                           onChange={(e) =>
-                            setProfile((prev) => ({
-                              ...prev,
-                              bio: e.target.value,
-                            }))
+                            setProfile((prev) =>
+                              prev ? { ...prev, bio: e.target.value } : null
+                            )
                           }
-                          rows="3"
+                          rows={3}
                           className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm sm:text-base resize-none"
                           placeholder="자신에 대해 간단히 소개해주세요..."
                         />
@@ -355,7 +378,7 @@ export default function ProfilePage() {
                         <input
                           type="password"
                           id="currentPassword"
-                          value={editData.password}
+                          value={editData.password || ""}
                           onChange={(e) =>
                             setEditData((prev) => ({
                               ...prev,
@@ -376,7 +399,7 @@ export default function ProfilePage() {
                         <input
                           type="password"
                           id="newPassword"
-                          value={editData.newPassword}
+                          value={editData.newPassword || ""}
                           onChange={(e) =>
                             setEditData((prev) => ({
                               ...prev,
@@ -397,7 +420,7 @@ export default function ProfilePage() {
                         <input
                           type="password"
                           id="confirmPassword"
-                          value={editData.confirmPassword}
+                          value={editData.confirmPassword || ""}
                           onChange={(e) =>
                             setEditData((prev) => ({
                               ...prev,

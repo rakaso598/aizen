@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import Footer from "../Footer";
+import "@testing-library/jest-dom";
 
 describe("Footer", () => {
   it("저작권 문구가 보인다", () => {

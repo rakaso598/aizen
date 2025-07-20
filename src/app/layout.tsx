@@ -1,11 +1,12 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Inter } from 'next/font/google'; // Next.js 폰트 최적화 (선택 사항)
-import SessionProvider from '../components/SessionProvider';
-import Header from '@/components/Header'; // Header 컴포넌트를 불러옵니다.
-import Footer from '@/components/Footer'; // Footer 컴포넌트를 불러옵니다.
+import { Inter } from "next/font/google"; // Next.js 폰트 최적화 (선택 사항)
+import SessionProvider from "../components/SessionProvider";
+import Header from "../components/Header"; // Header 컴포넌트를 불러옵니다.
+import Footer from "../components/Footer"; // Footer 컴포넌트를 불러옵니다.
+import type { ReactNode } from "react";
 
-const inter = Inter({ subsets: ['latin'] }); // 폰트 설정 (선택 사항)
+const inter = Inter({ subsets: ["latin"] }); // 폰트 설정 (선택 사항)
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,11 +19,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: 'Aizen.ART - AI Art Platform',
-  description: '인공지능이 빚어낸 예술, 당신이 완성하는 가치.',
+  title: "Aizen.ART - AI Art Platform",
+  description: "인공지능이 빚어낸 예술, 당신이 완성하는 가치.",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="ko">
       <body className={inter.className}>

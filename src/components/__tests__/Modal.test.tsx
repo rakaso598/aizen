@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import Modal from "../Modal";
+import "@testing-library/jest-dom";
 
 describe("Modal", () => {
   it("open이 false면 아무것도 렌더링하지 않는다", () => {

@@ -1,7 +1,8 @@
 // components/Footer.js
+import React from "react";
 import Link from "next/link";
 
-export default function Footer() {
+const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900 border-t border-gray-700 py-6 sm:py-8">
       <div className="container mx-auto px-2 sm:px-6">
@@ -26,4 +27,6 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

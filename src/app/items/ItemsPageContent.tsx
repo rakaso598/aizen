@@ -9,8 +9,18 @@ import Link from "next/link";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import Modal from "../../components/Modal";
 
+interface Card {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  rarity: "Common" | "Rare" | "Epic" | "Legendary";
+  owner?: { id: string; username: string };
+  createdAt: string;
+}
+
 export default function ItemsPageContent() {
-  const [cards, setCards] = useState([]);
+  const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(true); // 초기 로딩 상태는 true
   const [error, setError] = useState("");
   const [totalCards, setTotalCards] = useState(0);
@@ -24,39 +34,42 @@ export default function ItemsPageContent() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
 
-  const fetchCards = useCallback(async (currentSearchParams) => {
-    setLoading(true); // 데이터 fetch 시작 시 로딩 상태 true
-    setError("");
+  const fetchCards = useCallback(
+    async (currentSearchParams: URLSearchParams) => {
+      setLoading(true); // 데이터 fetch 시작 시 로딩 상태 true
+      setError("");
 
-    const query = new URLSearchParams(currentSearchParams);
-    const rarityToFetch = query.get("rarity") || "";
-    const pageToFetch = parseInt(query.get("page") || "1", 10);
-    const limitToFetch = parseInt(query.get("limit") || "10", 10);
+      const query = new URLSearchParams(currentSearchParams);
+      const rarityToFetch = query.get("rarity") || "";
+      const pageToFetch = parseInt(query.get("page") || "1", 10);
+      const limitToFetch = parseInt(query.get("limit") || "10", 10);
 
-    try {
-      const response = await fetch(`/api/items/cards?${query.toString()}`);
-      const data = await response.json();
+      try {
+        const response = await fetch(`/api/items/cards?${query.toString()}`);
+        const data = await response.json();
 
-      if (response.ok) {
-        setCards(data.cards);
-        setTotalCards(data.totalCards);
-        setTotalPages(data.totalPages);
-        setCurrentPage(data.currentPage);
-        setInputLimitPerPage(data.limit);
-      } else {
-        setModalMsg(data.message || "카드 목록을 불러오는데 실패했습니다.");
+        if (response.ok) {
+          setCards(data.cards);
+          setTotalCards(data.totalCards);
+          setTotalPages(data.totalPages);
+          setCurrentPage(data.currentPage);
+          setInputLimitPerPage(data.limit);
+        } else {
+          setModalMsg(data.message || "카드 목록을 불러오는데 실패했습니다.");
+          setModalOpen(true);
+          setCards([]);
+        }
+      } catch (err) {
+        console.error("카드 목록 조회 오류:", err);
+        setModalMsg("네트워크 오류 또는 서버에 연결할 수 없습니다.");
         setModalOpen(true);
         setCards([]);
+      } finally {
+        setLoading(false); // 데이터 로딩이 완료되면 loading 상태를 false로 변경
       }
-    } catch (err) {
-      console.error("카드 목록 조회 오류:", err);
-      setModalMsg("네트워크 오류 또는 서버에 연결할 수 없습니다.");
-      setModalOpen(true);
-      setCards([]);
-    } finally {
-      setLoading(false); // 데이터 로딩이 완료되면 loading 상태를 false로 변경
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     const rarityParam = searchParams.get("rarity") || "";
@@ -77,19 +90,19 @@ export default function ItemsPageContent() {
     newQuery.append("page", "1");
     newQuery.append("limit", inputLimitPerPage.toString());
 
-    router.push(`/items?${newQuery.toString()}`, { shallow: true });
+    router.push(`/items?${newQuery.toString()}`);
   };
 
   const handleResetFilters = () => {
     setInputRarity("");
     setInputLimitPerPage(10);
-    router.push("/items", { shallow: true });
+    router.push("/items");
   };
 
-  const handlePageChange = (page) => {
+  const handlePageChange = (page: number) => {
     const currentQuery = new URLSearchParams(searchParams);
     currentQuery.set("page", page.toString());
-    router.push(`/items?${currentQuery.toString()}`, { shallow: true });
+    router.push(`/items?${currentQuery.toString()}`);
   };
 
   const renderPaginationButtons = () => {
@@ -217,7 +230,7 @@ export default function ItemsPageContent() {
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 md:gap-8">
-              {cards.map((card) => (
+              {cards.map((card: Card) => (
                 <Link
                   key={card.id}
                   href={`/items/cards/${card.id}`}

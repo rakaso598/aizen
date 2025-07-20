@@ -1,13 +1,21 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import ItemsPageContent from "../ItemsPageContent";
+// jest-dom 확장 타입 인식용 import (tsconfig, jest 환경에서 필요)
+import "@testing-library/jest-dom";
 
 // mock next/link
-const MockLink = ({ children, ...props }) => <a {...props}>{children}</a>;
+const MockLink = ({
+  children,
+  ...props
+}: {
+  children: React.ReactNode;
+  [key: string]: any;
+}) => <a {...props}>{children}</a>;
 MockLink.displayName = "MockLink";
 jest.mock("next/link", () => MockLink);
 // mock next/image
-const MockImage = (props) => <img {...props} />;
+const MockImage = (props: any) => <img {...props} />;
 MockImage.displayName = "MockImage";
 jest.mock("next/image", () => MockImage);
 

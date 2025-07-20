@@ -1,6 +1,6 @@
 import React from "react";
 
-function getModalStyleAndIcon(children) {
+function getModalStyleAndIcon(children: React.ReactNode) {
   const msg = typeof children === "string" ? children : "";
   if (/성공|완료|환영|가입되었습니다|등록되었습니다|추가되었습니다/.test(msg)) {
     return {
@@ -30,13 +30,21 @@ function getModalStyleAndIcon(children) {
   };
 }
 
+interface ModalProps {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  children: React.ReactNode;
+  hideDefaultCloseButton?: boolean;
+}
+
 export default function Modal({
   open,
   onClose,
   title,
   children,
   hideDefaultCloseButton,
-}) {
+}: ModalProps) {
   if (!open) return null;
   const { icon, titleClass, contentClass } = getModalStyleAndIcon(children);
   return (

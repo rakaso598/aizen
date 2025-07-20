@@ -16,7 +16,7 @@ export default function SignupPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setModalOpen(false); // 폼 제출 시 모달 닫기
     setIsSuccess(false);

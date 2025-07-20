@@ -1,12 +1,17 @@
 // app/api/auth/[...nextauth]/route.js
-import NextAuth from "next-auth";
+import NextAuth, {
+  AuthOptions,
+  Session,
+  User,
+  SessionStrategy,
+} from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs"; // 비밀번호 검증을 위해 bcryptjs 임포트
 
 const prisma = new PrismaClient();
 
-export const authOptions = {
+export const authOptions: AuthOptions = {
   // 인증 제공자 설정
   providers: [
     CredentialsProvider({
@@ -14,11 +19,15 @@ export const authOptions = {
       name: "Credentials",
       // 로그인 폼에 필요한 자격 증명 필드 정의
       credentials: {
-        email: { label: "Email", type: "text", placeholder: "test@example.com" },
-        password: { label: "Password", type: "password" }
+        email: {
+          label: "Email",
+          type: "text",
+          placeholder: "test@example.com",
+        },
+        password: { label: "Password", type: "password" },
       },
       // 사용자가 로그인 시도할 때 호출되는 함수
-      async authorize(credentials) {
+      async authorize(credentials: Record<string, string> | undefined) {
         if (!credentials?.email || !credentials?.password) {
           return null; // 이메일 또는 비밀번호가 없으면 인증 실패
         }
@@ -29,7 +38,10 @@ export const authOptions = {
         });
 
         // 2. 사용자가 없거나 비밀번호가 일치하지 않으면 인증 실패
-        if (!user || !(await bcrypt.compare(credentials.password, user.passwordHash))) {
+        if (
+          !user ||
+          !(await bcrypt.compare(credentials.password, user.passwordHash))
+        ) {
           // 참고: bcrypt.compare는 해싱된 비밀번호와 평문 비밀번호를 비교합니다.
           // 여기서 user.password는 실제 DB의 passwordHash 필드입니다.
           return null;
@@ -50,21 +62,21 @@ export const authOptions = {
 
   // 세션 관리 전략: JWT (권장)
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as SessionStrategy,
   },
 
   // JWT 및 세션 콜백: JWT에 사용자 ID를 추가하여 세션에서도 접근 가능하게 함
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: any; user?: User }) {
       // 로그인 시 (user 객체가 있을 때) JWT에 사용자 ID를 추가
       if (user) {
         token.id = user.id;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: Session; token: any }) {
       // 세션에 사용자 ID를 추가하여 클라이언트 컴포넌트에서 접근 가능하게 함
-      session.user.id = token.id;
+      (session.user as any).id = token.id;
       return session;
     },
   },

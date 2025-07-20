@@ -4,8 +4,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react"; // useSession 훅 임포트
-import LoadingSpinner from "@/components/LoadingSpinner"; // 전체 페이지 로딩 스피너
-import SmallLoadingSpinner from "@/components/SmallLoadingSpinner"; // 새로 만든 작은 스피너 임포트
+import LoadingSpinner from "../components/LoadingSpinner"; // 전체 페이지 로딩 스피너
+import SmallLoadingSpinner from "../components/SmallLoadingSpinner"; // 새로 만든 작은 스피너 임포트
 import Image from "next/image"; // Image 컴포넌트 임포트
 import Link from "next/link"; // Link 컴포넌트 임포트
 import Modal from "../../components/Modal";
@@ -22,16 +22,17 @@ export default function CreateCardPage() {
 
   const router = useRouter();
   const { data: session, status } = useSession(); // useSession 훅 사용
+  type AuthStatus = "authenticated" | "loading" | "unauthenticated";
 
   // 페이지 진입 시 로그인 상태 확인 및 리다이렉트
   useEffect(() => {
     // 세션이 로딩 중이 아니고, 인증되지 않은 상태라면 로그인 페이지로 리다이렉트
-    if (status === "unauthenticated") {
+    if ((status as AuthStatus) === "unauthenticated") {
       router.push("/login");
     }
   }, [status, router]);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoadingButton(true); // 버튼 로딩 시작
 
@@ -86,7 +87,7 @@ export default function CreateCardPage() {
   }
 
   // 세션이 없거나 인증되지 않은 상태 (useEffect에서 로그인 페이지로 리다이렉트)
-  if (!session || status === "unauthenticated") {
+  if (!session || (status as AuthStatus) === "unauthenticated") {
     return null;
   }
 
@@ -139,7 +140,7 @@ export default function CreateCardPage() {
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  rows="3"
+                  rows={3}
                   className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm sm:text-base resize-none"
                   placeholder="카드에 대한 설명을 입력하세요..."
                 />
@@ -177,7 +178,7 @@ export default function CreateCardPage() {
                   id="prompt"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  rows="4"
+                  rows={4}
                   className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm sm:text-base resize-none"
                   placeholder="AI가 생성할 이미지를 설명하는 프롬프트를 입력하세요. 예: 'A majestic dragon flying over a mystical forest at sunset, digital art style'"
                   required

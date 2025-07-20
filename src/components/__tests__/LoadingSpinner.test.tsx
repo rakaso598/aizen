@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import LoadingSpinner from "../LoadingSpinner";
+import "@testing-library/jest-dom";
 
 describe("LoadingSpinner", () => {
   it("로딩 스피너와 텍스트가 정상적으로 렌더링된다", () => {

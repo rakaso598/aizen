@@ -1,6 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import Header from "../Header";
+import "@testing-library/jest-dom";
 
 describe("Header", () => {
   it("로고와 네비게이션이 정상적으로 렌더링된다", () => {

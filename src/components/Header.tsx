@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react"; // useSession과 signOut 임포트
 
-export default function Header() {
+const Header: React.FC = () => {
   const [hasScrolled, setHasScrolled] = useState(false);
   const { data: session, status } = useSession(); // useSession 훅 사용
 
@@ -105,4 +105,6 @@ export default function Header() {
       `}</style>
     </header>
   );
-}
+};
+
+export default Header;

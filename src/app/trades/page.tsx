@@ -4,8 +4,17 @@ import { useEffect, useState } from "react";
 import Modal from "../../components/Modal";
 import LoadingSpinner from "../../components/LoadingSpinner";
 
+interface Trade {
+  id: string;
+  proposer: { id: string; username: string };
+  proposerCard: { id: string; title: string; imageUrl: string; rarity: string };
+  receiver: { id: string; username: string };
+  receiverCard: { id: string; title: string; imageUrl: string; rarity: string };
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "CANCELLED";
+}
+
 export default function TradesPage() {
-  const [trades, setTrades] = useState([]);
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -36,7 +45,7 @@ export default function TradesPage() {
   }, []);
 
   // 거래 수락/거절
-  const handleAction = async (tradeId, action) => {
+  const handleAction = async (tradeId: string, action: string) => {
     setActionLoading(tradeId + action);
     try {
       const res = await fetch(`/api/trades/${tradeId}`, {
@@ -83,7 +92,7 @@ export default function TradesPage() {
           </div>
         ) : (
           <ul className="space-y-6">
-            {trades.map((trade) => (
+            {trades.map((trade: Trade) => (
               <li
                 key={trade.id}
                 className="bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center gap-4"

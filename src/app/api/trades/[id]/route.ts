@@ -2,19 +2,23 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../../auth/[...nextauth]/route";
+import { Session } from "next-auth";
+type MySession = Session & {
+  user: { id: string; name?: string; email?: string; image?: string };
+};
 
 const prisma = new PrismaClient();
 
 // PUT: 거래 응답 (수락/거절)
-export async function PUT(request, { params }) {
+export async function PUT(request: Request, { params }: { params: any }) {
   try {
     const { id: tradeId } = params;
     const { action } = await request.json(); // 'accept' 또는 'reject'
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }
@@ -116,13 +120,13 @@ export async function PUT(request, { params }) {
 }
 
 // DELETE: 거래 취소 (제안자만 가능)
-export async function DELETE(request, { params }) {
+export async function DELETE(request: Request, { params }: { params: any }) {
   try {
     const { id: tradeId } = params;
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }

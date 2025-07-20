@@ -2,18 +2,22 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { Session } from "next-auth";
+type MySession = Session & {
+  user: { id: string; name?: string; email?: string; image?: string };
+};
 
 const prisma = new PrismaClient();
 
 // POST: 새로운 거래 제안 생성
-export async function POST(request) {
+export async function POST(request: Request) {
   try {
     const { proposerCardId, receiverId, receiverCardId } = await request.json();
 
     // 세션 확인
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
+    const session = (await getServerSession(authOptions)) as MySession | null;
+    if (!session || !session.user || !session.user.id) {
       return NextResponse.json(
         { message: "로그인이 필요합니다." },
         { status: 401 }
@@ -159,7 +163,7 @@ export async function POST(request) {
 }
 
 // GET: 사용자의 거래 목록 조회
-export async function GET(request) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type"); // 'sent' 또는 'received'
@@ -173,10 +177,10 @@ export async function GET(request) {
       );
     }
 
-    const userId = session.user.id;
+    const userId = (session.user as any).id;
 
     // 거래 목록 조회 조건 설정
-    let whereClause = {};
+    let whereClause: Record<string, any> = {};
     if (type === "sent") {
       whereClause.proposerId = userId;
     } else if (type === "received") {
