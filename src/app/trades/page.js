@@ -86,18 +86,12 @@ export default function TradesPage() {
             {trades.map((trade) => (
               <li
                 key={trade.id}
-                className="bg-gray-800 rounded-xl shadow-lg p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
+                className="bg-gray-800 rounded-xl shadow-lg p-6 flex flex-col items-center gap-4"
               >
-                <div className="flex-1 flex flex-col sm:flex-row sm:items-center gap-3">
-                  {/* 상대방 정보 */}
-                  <div className="text-sm sm:text-base text-gray-300 mb-2 sm:mb-0">
-                    <span className="font-bold text-cyan-400">
-                      {trade.proposer.username}
-                    </span>{" "}
-                    님이
-                  </div>
+                {/* 1단: 카드 이미지와 화살표 */}
+                <div className="flex flex-row items-center justify-center gap-8 w-full">
                   {/* 상대방 카드 */}
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center min-w-[90px]">
                     <span className="text-xs text-gray-400 mb-1">
                       상대 카드
                     </span>
@@ -108,15 +102,15 @@ export default function TradesPage() {
                         className="object-cover w-full h-full"
                       />
                     </div>
-                    <span className="text-xs text-gray-300">
+                    <span className="text-xs text-gray-300 text-center">
                       {trade.proposerCard.title}
                     </span>
                   </div>
-                  <span className="hidden sm:inline-block text-gray-400 text-lg font-bold mx-2">
+                  <span className="text-gray-400 text-3xl font-bold mx-4">
                     ↔
                   </span>
                   {/* 내 카드 */}
-                  <div className="flex flex-col items-center">
+                  <div className="flex flex-col items-center min-w-[90px]">
                     <span className="text-xs text-gray-400 mb-1">내 카드</span>
                     <div className="w-20 h-28 bg-gray-700 rounded-lg overflow-hidden flex items-center justify-center mb-1">
                       <img
@@ -125,41 +119,55 @@ export default function TradesPage() {
                         className="object-cover w-full h-full"
                       />
                     </div>
-                    <span className="text-xs text-gray-300">
+                    <span className="text-xs text-gray-300 text-center">
                       {trade.receiverCard.title}
                     </span>
                   </div>
                 </div>
-                {/* 상태 및 버튼 */}
-                <div className="flex flex-row sm:flex-col gap-2 items-center sm:items-end mt-2 sm:mt-0">
-                  {trade.status === "PENDING" ? (
-                    <>
-                      <button
-                        onClick={() => handleAction(trade.id, "accept")}
-                        disabled={actionLoading === trade.id + "accept"}
-                        className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {actionLoading === trade.id + "accept"
-                          ? "처리 중..."
-                          : "수락"}
-                      </button>
-                      <button
-                        onClick={() => handleAction(trade.id, "reject")}
-                        disabled={actionLoading === trade.id + "reject"}
-                        className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {actionLoading === trade.id + "reject"
-                          ? "처리 중..."
-                          : "거절"}
-                      </button>
-                    </>
-                  ) : trade.status === "ACCEPTED" ? (
-                    <span className="text-green-400 font-bold">거래 완료</span>
-                  ) : trade.status === "REJECTED" ? (
-                    <span className="text-red-400 font-bold">거래 거절됨</span>
-                  ) : trade.status === "CANCELLED" ? (
-                    <span className="text-gray-400 font-bold">거래 취소됨</span>
-                  ) : null}
+                {/* 2단: 유저명, 상태/버튼 */}
+                <div className="flex flex-col items-center gap-2 w-full mt-2">
+                  <div className="text-sm sm:text-base text-gray-300 text-center">
+                    <span className="font-bold text-cyan-400">
+                      {trade.proposer.username}
+                    </span>
+                    님이 보낸 요청
+                  </div>
+                  <div className="flex flex-row gap-3 justify-center items-center mt-1">
+                    {trade.status === "PENDING" ? (
+                      <>
+                        <button
+                          onClick={() => handleAction(trade.id, "accept")}
+                          disabled={actionLoading === trade.id + "accept"}
+                          className="px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                        >
+                          {actionLoading === trade.id + "accept"
+                            ? "처리 중..."
+                            : "수락"}
+                        </button>
+                        <button
+                          onClick={() => handleAction(trade.id, "reject")}
+                          disabled={actionLoading === trade.id + "reject"}
+                          className="px-5 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed text-base"
+                        >
+                          {actionLoading === trade.id + "reject"
+                            ? "처리 중..."
+                            : "거절"}
+                        </button>
+                      </>
+                    ) : trade.status === "ACCEPTED" ? (
+                      <span className="text-green-400 font-bold text-base">
+                        거래 완료
+                      </span>
+                    ) : trade.status === "REJECTED" ? (
+                      <span className="text-red-400 font-bold text-base">
+                        거래 거절됨
+                      </span>
+                    ) : trade.status === "CANCELLED" ? (
+                      <span className="text-gray-400 font-bold text-base">
+                        거래 취소됨
+                      </span>
+                    ) : null}
+                  </div>
                 </div>
               </li>
             ))}

@@ -23,10 +23,34 @@ export default function CardDetailPage() {
   const [ratingLoading, setRatingLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
+  const [myCards, setMyCards] = useState([]);
+  const [selectedMyCardId, setSelectedMyCardId] = useState("");
+  const [editMode, setEditMode] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [editRarity, setEditRarity] = useState("");
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [deleteWithRatings, setDeleteWithRatings] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(false);
 
   useEffect(() => {
     fetchCardDetails();
   }, [id]);
+
+  // 내 카드 목록 불러오기
+  useEffect(() => {
+    if (session?.user?.id) {
+      fetch(`/api/items/cards?ownerId=${session.user.id}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setMyCards(data.cards || []);
+          if (data.cards && data.cards.length > 0) {
+            setSelectedMyCardId(data.cards[0].id);
+          }
+        });
+    }
+  }, [session?.user?.id]);
 
   const fetchCardDetails = async () => {
     try {
@@ -92,6 +116,37 @@ export default function CardDetailPage() {
     }
   };
 
+  // 거래 요청
+  const handleTradeRequest = async () => {
+    if (!session) {
+      setModalMsg("로그인이 필요합니다.");
+      setModalOpen(true);
+      return;
+    }
+    if (!selectedMyCardId) {
+      setModalMsg("제안할 내 카드를 선택해주세요.");
+      setModalOpen(true);
+      return;
+    }
+    try {
+      const response = await fetch("/api/trades", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          proposerCardId: selectedMyCardId,
+          receiverId: card.owner.id,
+          receiverCardId: card.id,
+        }),
+      });
+      const data = await response.json();
+      setModalMsg(data.message || "거래 요청이 완료되었습니다.");
+      setModalOpen(true);
+    } catch (err) {
+      setModalMsg("거래 요청 중 오류가 발생했습니다.");
+      setModalOpen(true);
+    }
+  };
+
   const handleTrade = () => {
     if (!session) {
       setModalMsg("로그인이 필요합니다.");
@@ -101,16 +156,6 @@ export default function CardDetailPage() {
 
     // 거래 페이지로 이동 (향후 구현)
     setModalMsg("거래 기능은 준비 중입니다.");
-    setModalOpen(true);
-  };
-
-  const handleTradeRequest = () => {
-    if (!session) {
-      setModalMsg("로그인이 필요합니다.");
-      setModalOpen(true);
-      return;
-    }
-    setModalMsg("거래 요청이 완료되었습니다.");
     setModalOpen(true);
   };
 
@@ -183,6 +228,80 @@ export default function CardDetailPage() {
         return "bg-gray-400/20 border-gray-400";
     }
   };
+
+  // 카드 삭제
+  const handleDelete = () => {
+    setDeleteConfirmOpen(true);
+    setDeleteWithRatings(false);
+  };
+
+  // 실제 삭제 실행
+  const doDelete = async (withRatings = false) => {
+    setPendingDelete(true);
+    try {
+      const url = withRatings
+        ? `/api/items/cards/${id}?withRatings=true`
+        : `/api/items/cards/${id}`;
+      const res = await fetch(url, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok) {
+        setModalMsg("카드가 삭제되었습니다.");
+        setModalOpen(true);
+        setTimeout(() => router.push("/items"), 1200);
+      } else if (data.message && data.message.includes("평점이 남아 있어")) {
+        // 평점이 남아 있으면 평점까지 삭제할지 물어보는 모달
+        setDeleteConfirmOpen(true);
+        setDeleteWithRatings(true);
+      } else {
+        setModalMsg(data.message || "카드 삭제에 실패했습니다.");
+        setModalOpen(true);
+      }
+    } catch (err) {
+      setModalMsg("카드 삭제 중 오류가 발생했습니다.");
+      setModalOpen(true);
+    } finally {
+      setPendingDelete(false);
+    }
+  };
+
+  // 수정 모드 진입
+  const startEdit = () => {
+    setEditTitle(card.title);
+    setEditDescription(card.description || "");
+    setEditImageUrl(card.imageUrl);
+    setEditRarity(card.rarity);
+    setEditMode(true);
+  };
+  // 수정 저장
+  const handleEditSave = async () => {
+    try {
+      const res = await fetch(`/api/items/cards/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: editTitle,
+          description: editDescription,
+          imageUrl: editImageUrl,
+          rarity: editRarity,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setModalMsg("카드가 수정되었습니다.");
+        setModalOpen(true);
+        setEditMode(false);
+        fetchCardDetails();
+      } else {
+        setModalMsg(data.message || "카드 수정에 실패했습니다.");
+        setModalOpen(true);
+      }
+    } catch (err) {
+      setModalMsg("카드 수정 중 오류가 발생했습니다.");
+      setModalOpen(true);
+    }
+  };
+  // 수정 취소
+  const handleEditCancel = () => setEditMode(false);
 
   if (loading) {
     return (
@@ -276,9 +395,87 @@ export default function CardDetailPage() {
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   />
                 </div>
-
                 {/* 카드 정보 */}
                 <div className="space-y-4 md:space-y-6">
+                  {/* 소유자만 수정/삭제 버튼 */}
+                  {session?.user?.id === card.owner?.id && !editMode && (
+                    <div className="flex gap-3 mb-2">
+                      <button
+                        onClick={startEdit}
+                        className="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-bold rounded-full shadow-md text-sm"
+                      >
+                        수정
+                      </button>
+                      <button
+                        onClick={handleDelete}
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-md text-sm"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  )}
+                  {/* 수정 폼 */}
+                  {editMode ? (
+                    <div className="space-y-3 p-4 bg-gray-900 rounded-xl border border-gray-700">
+                      <div>
+                        <label className="block text-gray-300 mb-1">제목</label>
+                        <input
+                          type="text"
+                          value={editTitle}
+                          onChange={(e) => setEditTitle(e.target.value)}
+                          className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-1">설명</label>
+                        <textarea
+                          value={editDescription}
+                          onChange={(e) => setEditDescription(e.target.value)}
+                          className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-1">
+                          이미지 URL
+                        </label>
+                        <input
+                          type="text"
+                          value={editImageUrl}
+                          onChange={(e) => setEditImageUrl(e.target.value)}
+                          className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-gray-300 mb-1">
+                          희귀도
+                        </label>
+                        <select
+                          value={editRarity}
+                          onChange={(e) => setEditRarity(e.target.value)}
+                          className="w-full px-3 py-2 rounded bg-gray-800 text-white border border-gray-600"
+                        >
+                          <option value="Common">Common</option>
+                          <option value="Rare">Rare</option>
+                          <option value="Epic">Epic</option>
+                          <option value="Legendary">Legendary</option>
+                        </select>
+                      </div>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={handleEditSave}
+                          className="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold rounded-full shadow-md text-sm"
+                        >
+                          저장
+                        </button>
+                        <button
+                          onClick={handleEditCancel}
+                          className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full shadow-md text-sm"
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="p-4 sm:p-6 bg-gray-800 rounded-xl shadow-2xl border border-gray-700">
                     <h2 className="text-lg sm:text-2xl font-bold text-white mb-3 sm:mb-4">
                       카드 정보
@@ -365,17 +562,31 @@ export default function CardDetailPage() {
                   </div>
 
                   {/* 액션 버튼들 */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                  <div className="flex flex-col items-center gap-3 w-full max-w-md mx-auto mt-4 mb-2">
+                    {/* 내 카드 선택 드롭다운 */}
+                    {session && myCards.length > 0 && (
+                      <select
+                        value={selectedMyCardId}
+                        onChange={(e) => setSelectedMyCardId(e.target.value)}
+                        className="w-full max-w-xs px-3 py-2 border border-gray-600 rounded-lg bg-gray-700 text-white text-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                      >
+                        {myCards.map((myCard) => (
+                          <option key={myCard.id} value={myCard.id}>
+                            {myCard.title} ({myCard.rarity})
+                          </option>
+                        ))}
+                      </select>
+                    )}
                     <button
                       onClick={handleTradeRequest}
-                      disabled={loading || !session}
-                      className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-base sm:text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={loading || !session || myCards.length === 0}
+                      className="w-full max-w-xs px-5 py-2 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-base rounded-full shadow-md transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-cyan-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {session ? "거래 요청하기" : "로그인 후 거래 가능"}
                     </button>
                     <Link
                       href="/items"
-                      className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 bg-transparent border-2 border-white text-white font-bold text-base sm:text-lg rounded-full shadow-lg transform hover:scale-105 hover:bg-white hover:text-black transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75 text-center"
+                      className="w-full max-w-xs px-5 py-2 bg-transparent border-2 border-white text-white font-bold text-base rounded-full shadow-md hover:bg-white hover:text-black transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-75 text-center"
                     >
                       다른 카드 보기
                     </Link>
@@ -473,6 +684,68 @@ export default function CardDetailPage() {
       </div>
       <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
         {modalMsg}
+      </Modal>
+      {/* 삭제 확인 모달 */}
+      <Modal
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        hideDefaultCloseButton={true}
+      >
+        {deleteWithRatings ? (
+          <div className="text-center">
+            <div className="mb-3">
+              이 카드에 평점이 남아 있습니다.
+              <br />
+              평점까지 같이 삭제할까요?
+            </div>
+            <div className="flex gap-3 justify-center mt-4">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  doDelete(true);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-md text-sm"
+                disabled={pendingDelete}
+              >
+                평점까지 삭제
+              </button>
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full shadow-md text-sm"
+                disabled={pendingDelete}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center">
+            <div className="mb-3">
+              정말로 이 카드를 삭제하시겠습니까?
+              <br />
+              되돌릴 수 없습니다.
+            </div>
+            <div className="flex gap-3 justify-center mt-4">
+              <button
+                onClick={() => {
+                  setDeleteConfirmOpen(false);
+                  doDelete(false);
+                }}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-full shadow-md text-sm"
+                disabled={pendingDelete}
+              >
+                삭제
+              </button>
+              <button
+                onClick={() => setDeleteConfirmOpen(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-bold rounded-full shadow-md text-sm"
+                disabled={pendingDelete}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        )}
       </Modal>
     </>
   );

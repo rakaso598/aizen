@@ -7,9 +7,10 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 const prisma = new PrismaClient();
 
 // POST: 카드에 평가 추가
-export async function POST(request, { params }) {
+export async function POST(request, context) {
   try {
-    const { id: cardId } = params;
+    const { params } = context;
+    const { id: cardId } = await params;
     const { value, comment } = await request.json();
 
     // 세션 확인
@@ -105,9 +106,10 @@ export async function POST(request, { params }) {
 }
 
 // GET: 카드의 모든 평가 조회
-export async function GET(request, { params }) {
+export async function GET(request, context) {
   try {
-    const { id: cardId } = params;
+    const { params } = context;
+    const { id: cardId } = await params;
 
     // 카드 존재 확인
     const card = await prisma.card.findUnique({

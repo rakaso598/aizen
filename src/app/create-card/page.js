@@ -18,6 +18,7 @@ export default function CreateCardPage() {
   const [isLoadingButton, setIsLoadingButton] = useState(false); // 버튼 로딩 상태 추가
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMsg, setModalMsg] = useState("");
+  const [prompt, setPrompt] = useState("");
 
   const router = useRouter();
   const { data: session, status } = useSession(); // useSession 훅 사용
@@ -47,7 +48,7 @@ export default function CreateCardPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, description, imageUrl, rarity }),
+        body: JSON.stringify({ title, description, imageUrl, rarity, prompt }),
       });
 
       const data = await response.json();
@@ -60,6 +61,7 @@ export default function CreateCardPage() {
         setTitle("");
         setDescription("");
         setImageUrl("");
+        setPrompt("");
         setRarity("Common");
       } else {
         // 카드 생성 실패 시 (alert 또는 폼 내부 메시지 등으로 처리)
@@ -173,11 +175,28 @@ export default function CreateCardPage() {
                 </label>
                 <textarea
                   id="prompt"
-                  value={imageUrl} // imageUrl을 prompt로 사용
-                  onChange={(e) => setImageUrl(e.target.value)}
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
                   rows="4"
                   className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm sm:text-base resize-none"
                   placeholder="AI가 생성할 이미지를 설명하는 프롬프트를 입력하세요. 예: 'A majestic dragon flying over a mystical forest at sunset, digital art style'"
+                  required
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="imageUrl"
+                  className="block text-sm sm:text-base font-medium text-gray-300 mb-1 sm:mb-2"
+                >
+                  이미지 링크(URL) *
+                </label>
+                <input
+                  type="url"
+                  id="imageUrl"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-600 rounded-lg shadow-sm bg-gray-700 text-white focus:outline-none focus:ring-cyan-500 focus:border-cyan-500 text-sm sm:text-base"
+                  placeholder="https://example.com/image.png"
                   required
                 />
               </div>

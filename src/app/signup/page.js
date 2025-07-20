@@ -154,7 +154,7 @@ export default function SignupPage() {
                 // 버튼 디자인 변경: 노란색 배경, 흰색 텍스트, 그림자, 호버/포커스 효과 (랜딩 페이지의 "내 컬렉션" 버튼과 유사)
                 className="w-full px-6 py-3 sm:px-8 sm:py-4 bg-yellow-600 hover:bg-yellow-700 text-white font-bold text-base sm:text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500 focus:ring-opacity-75 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {message ? "회원가입" : "가입 중..."}
+                회원가입
               </button>
             </form>
 
